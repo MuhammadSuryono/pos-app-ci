@@ -70,11 +70,8 @@ class Pembayaran extends MY_Controller
 		$dt=array();
 		$this->session->set_userdata('SalesOrderLine', $dataSet);
 		$cart = $this->session->userdata('SalesOrderLine');
-		$post_data = array(
-			'No'		=> '*'
-		);
-		$url = URL_API.'customer/viewcustomer/';
-		$data_api = $this->send_api->send_data($url, $post_data);
+		$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Customer";
+		$data_api = $this->send_api->get_data($url);
 		$dt['countLine'] = $CountLine;
 		$dt['cart'] = $cart;
 		$dt['tax'] = $tax;
@@ -82,17 +79,15 @@ class Pembayaran extends MY_Controller
 		$dt['grnd_ttl'] = $grnd_ttl;
 		$dt['potongan'] = $potongan;
 		$dt['notax'] = $notax;
-		$dt['pelanggan'] = json_decode($data_api);
-
+		$dt['pelanggan'] = json_decode($data_api)->value;
 		$this->load->view('pembayaran/transaksi', $dt);
 		
 	}
 	
 	public function get_payment(){
 		$post_data = array();
-		$url = URL_API.'SalesOrder/ViewPaymentType/';
-		$data_api = $this->send_api->send_data($url, $post_data);
-		
+		$url = URL_API.'/Company('."'be489792-ee2f-ed11-97e8-000d3aa1ef31'".')/POS_PaymentMethod?$filter=Show_In_POS eq true';
+		$data_api = $this->send_api->get_data($url);
 		echo $data_api;
 	}
 	
@@ -101,8 +96,8 @@ class Pembayaran extends MY_Controller
 		$post_data = array(
 			'PaymentType'	=> $val
 		);
-		$url = URL_API.'SalesOrder/viewpaymentmethod/';
-		$data_api = $this->send_api->send_data($url, $post_data);
+		$url = URL_API.'/Company('."'be489792-ee2f-ed11-97e8-000d3aa1ef31'".')/POS_PaymentMethod?$filter=Show_In_POS eq true and Payment_Type eq ' . "'$val'";
+		$data_api = $this->send_api->get_data($url);
 		echo $data_api;
 	}
 

@@ -198,119 +198,69 @@ class Penjualan extends MY_Controller
 	}
 	
 	public function simpan_transaksi(){
-		$dt_pelanggan =  $this->input->post('id_pelanggan');
-		$type_bayar =  $this->input->post('type_bayar');
-		$type_pay = $this->input->post('type_pay');
-		$nilai_bayar =  $this->input->post('nilai_bayar');
-		$id_kasir =  $this->input->post('id_kasir');
-		$nama_bank = $this->input->post('nama_bank');
-		$kembalian = $this->input->post('kembalian');
-		$idr_convert = $this->input->post('idr_convert');		
-		$idr_point = $this->input->post('idr_point');
-		$TotalBayar = $this->input->post('cash');
-		$pelanggan = explode('Þ',$dt_pelanggan);
-		$id_pelanggan = $pelanggan[0];
-		$cart = $this->session->userdata('SalesOrderLine');
-		$CountLine =  count($cart);
-		$sales_pay = array();
-		$point_int = 0;
-		$nilaiafterpoin = 0;
-		for($i=0;$i<sizeof($type_bayar);$i++){
-			if($type_bayar[$i] > 0 || !empty($type_bayar[$i])){
-				//if($type_bayar[$i] == 'CREDIT' || $type_bayar[$i] == 'DEBIT'){
-				//	$type_bayar[$i] = $type_pay[$i];
-				//}
-				$bayar = '';
-				if($type_bayar[$i] == 'CASH'){
-					$bayar = 'CASH';
-				}
-				else {
-					$bayar = $type_pay[$i];
-				}
-				//error_log('ok');
-				$sales_pay[$i] = array(
-					'StoreId'					=> $this->session->userdata('storeId'),
-					'PaymentMethodCode'			=> $bayar,
-					'PaymentAmount'				=> str_replace('.','',$nilai_bayar[$i]),
-					'PaymentTypeDescription'	=> $nama_bank[$i],
-					'Point'						=> 0
-				);
-				if ($nama_bank[$i] != "") {				
-					$point_int = $point_int + (int)$nama_bank[$i];
-				}				
-			}
-			
-		}
-		//error_log(serialize($sales_pay));
-		foreach($cart as $c){
-			$sales_item[] = array(
-				'ItemCode'	=> $c['ItemCode'],
-				'Qty'		=> $c['Qty'],
-				'UnitPrice'	=> $c['UnitPrice'],
-				'Discount'	=> $c['Discount'],
-				'Point'		=> $c['Point'],
-				'Barcode'	=> $c['Barcode'],
-				'VATStatus'	=> $c['VATStatus']
-			);
-		}
-		
-		$CountPayment = count($sales_pay);
-		$ip=$this->input->ip_address();
-		$post_data = array(
-			'OrderNo'			=> 0,
-			'IPPos'				=> $ip,
-			'PosId'				=> $this->session->userdata('storeId'),
-			'DocumentType'		=> 1,
-			'CustomerNo'		=> $id_pelanggan,
-			'UserCode'			=> $id_kasir,
-			'CountLine'			=> $CountLine,
-			'OrderNoToReturn'	=> '',
-			'CountPayment'		=> $CountPayment,
-			'SalesOrderLine'	=> $sales_item,
-			'SalesPayment'		=> $sales_pay,
-			'TotalBayar'		=> $TotalBayar,
-			'Kembalian'			=> $kembalian
-		);
-		//error_log(serialize($post_data));
-		$url = URL_API.'SalesOrder/Transaction/';
-		//error_log($url);
-		
-		$data_api = $this->send_api->send_data($url, $post_data);
-		
-		$this->session->set_userdata('print_data', '');
-		$this->session->set_userdata('print_data', $data_api);
+        $filter = '$filter';
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/NoSeriesLines?$filter=Series_Code eq 'S-INV'";
+        $data_api = $this->send_api->get_data($url);
+        $resp = json_decode($data_api)->value;
+        $lastCode = $resp[count($resp) - 1]->Last_No_Used;
 
-		
-		// minus poin kimid
-		/*if ($id_pelanggan != '011111111111' && $point_int != "0"){
-			$nilai = (int)$nilaiafterpoin % (int)$idr_convert;
-			$url = URL_API_WEB.'user/update_point';
-			$post_data = array(
-				'phone'=> $id_pelanggan,
-				'point'=> $point_int,
-				'capture'=> "minus"
-			);
-			$data_api3 = $this->send_api->send_data($url, $post_data);
-		};
+        $splitCode = explode("-", $lastCode);
+        $countCode = sprintf("%05d", $splitCode[2] + 1);
+        $splitCode[2] = $countCode;
+        $lastCode = join("-", $splitCode);
 
-		//plus point kimid		
-		$nilaiafterpoin = (int)$TotalBayar - ($point_int * (int)$idr_point);
-		if ($id_pelanggan != '011111111111'){
-			$nilai = (int)$nilaiafterpoin / (int)$idr_convert;
-			$url = URL_API_WEB.'user/update_point';
-			$post_data = array(
-				'phone'=> $id_pelanggan,
-				'point'=> floor($nilai),
-				'capture'=> "plus"
-			);
-			$data_api2 = $this->send_api->send_data($url, $post_data);	
-		};*/
-	
-		//$dt_json = json_decode($data_api);
-		//error_log(serialize($data_api));
-		//$status = $dt_json->Status;
-		//error_log(serialize($data_api));
-		echo $data_api;
+        $bodySalesInvoiceHeader = [
+            "no" => $lastCode,
+             "DocumentType"=> "Invoice",
+            "PostingDate"=> date("Y-m-d"),
+            "sellToCustomerNo"=> "001",
+            "sellToCustomerName"=> "Cibubur POS",
+            "shipmentDate"=> date("Y-m-d"),
+            "ExternalDocNo"=> $lastCode,
+            "PaymentMethod"=> 'CASH',
+        ];
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders";
+        $data_api = $this->send_api->send_data($url, $bodySalesInvoiceHeader);
+
+        $salesOrder = $this->session->userdata('SalesOrderLine');
+        $bodyInvoiceLine = array();
+        foreach ($salesOrder as $key => $sales) {
+            $bodyInvoiceLine[] = [
+                "DocumentType"=> "Invoice",
+                "DocumentNo"=> $lastCode,
+                "lineNo"=> 10000 + ($key * 10000) ,
+                "type"=> "Item",
+                "no"=> $sales['ItemCode'],
+                "description"=> "ESTRELLA DAMM BEER - BOTTLE 330 ML",
+                "unitOfMeasure"=> "Bottle",
+                "LocationCode"=> "MKS03",
+                "quantity"=> (int)$sales['Qty'],
+                "DiscountPercent"=> (int)$sales['Discount'],
+                "unitPrice"=> (int)$sales['UnitPrice']
+            ];
+        }
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines";
+        $data_api = $this->send_api->send_data($url, count($bodyInvoiceLine) == 1 ? $bodyInvoiceLine[0] : ["apiSalesLines" => $bodyInvoiceLine]);
+
+        $bodySalesInvoicePayment = [
+            "No"=> 3,
+            "SalesOrderNo"=> $lastCode,
+            "PaymentMethodCode"=> $this->input->post('type_pay')[0],
+            "NominalPayment"=> (int)join("", explode(".", $this->input->post('nilai_bayar')[0])),
+            "PaymentType"=> $this->input->post('type_bayar')[0] ?? 'CASH',
+            "QtyPoint"=> 0,
+            "NoNOTA"=> "",
+            "DeliveryAmount"=> 0
+            ];
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Payment";
+        $data_api = $this->send_api->send_data($url, $bodySalesInvoicePayment);
+
+        $bodySubmit = ["invoiceNo" => $lastCode];
+
+        $url = URL_API."/POS_Integration_PostingPOS?Company=MKS%20DEMO";
+        $data_api = $this->send_api->send_data($url, $bodySubmit);
+
+		echo json_encode(['status' => 'Posted']);
 		
 	}
 

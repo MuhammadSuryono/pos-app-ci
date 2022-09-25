@@ -60,47 +60,47 @@ if($level !== 'admin')
 
 						</div>
 					</div>
-					<div class="panel panel-primary" id='PelangganArea'>
-						<div class="panel-heading"><i class='fa fa-user'></i> Informasi Pelanggan</div>
-						<div class="panel-body">
-							<div class="form-group">
-								<label>Pelanggan</label>
-								<!--<a href="<?php echo site_url('penjualan/tambah-pelanggan'); ?>" class='pull-right' id='TambahPelanggan'>Tambah Baru ?</a>-->
-								<select name='id_pelanggan' id='id_pelanggan' class='form-control input-sm select2' style='cursor: pointer;'>
-									
-									<?php
-										$id = '';
-										if(!empty($pelanggan->Customer)){
-											foreach($pelanggan->Customer as $pc){
-												$id = $pc->No.'Þ'.$pc->Name.'Þ'.$pc->Address.'-'.$pc->Address2.'Þ'.$pc->PhoneNo;
-												echo "<option value='".$id."'>".$pc->Name."</option>";
-											}
-										}
-									
-									?>
-								</select>
-							</div>
-
-							<div class="form-horizontal">
-								<div class="form-group">
-									<label class="col-sm-4 control-label">Telp / HP</label>
-									<div class="col-sm-8">
-										<div id='telp_pelanggan'>011111111111</div>
-									</div>
-								</div>
-								<div class="form-group">
-									<label class="col-sm-4 control-label">POINT</label>
-									<div class="col-sm-8">
-										<div id='point_pelanggan'>0</div>
-										<div id='idr_point' style='display:none'>0</div>
-										<div id='idr_convert' style='display:none'>0</div>
-									</div>
-								</div>
-								
-							</div>
-
-						</div>
-					</div>
+<!--					<div class="panel panel-primary" id='PelangganArea'>-->
+<!--						<div class="panel-heading"><i class='fa fa-user'></i> Informasi Pelanggan</div>-->
+<!--						<div class="panel-body">-->
+<!--							<div class="form-group">-->
+<!--								<label>Pelanggan</label>-->
+<!--								<!--<a href="--><?php //echo site_url('penjualan/tambah-pelanggan'); ?><!--" class='pull-right' id='TambahPelanggan'>Tambah Baru ?</a>-->-->
+<!--								<select name='id_pelanggan' id='id_pelanggan' class='form-control input-sm select2' style='cursor: pointer;'>-->
+<!--									-->
+<!--									--><?php
+//										$id = '';
+//										if(!empty($pelanggan->Customer)){
+//											foreach($pelanggan->Customer as $pc){
+//												$id = $pc->No.'Þ'.$pc->Name.'Þ'.$pc->Address.'-'.$pc->Address2.'Þ'.$pc->PhoneNo;
+//												echo "<option value='".$id."'>".$pc->Name."</option>";
+//											}
+//										}
+//									
+//									?>
+<!--								</select>-->
+<!--							</div>-->
+<!---->
+<!--							<div class="form-horizontal">-->
+<!--								<div class="form-group">-->
+<!--									<label class="col-sm-4 control-label">Telp / HP</label>-->
+<!--									<div class="col-sm-8">-->
+<!--										<div id='telp_pelanggan'>011111111111</div>-->
+<!--									</div>-->
+<!--								</div>-->
+<!--								<div class="form-group">-->
+<!--									<label class="col-sm-4 control-label">POINT</label>-->
+<!--									<div class="col-sm-8">-->
+<!--										<div id='point_pelanggan'>0</div>-->
+<!--										<div id='idr_point' style='display:none'>0</div>-->
+<!--										<div id='idr_convert' style='display:none'>0</div>-->
+<!--									</div>-->
+<!--								</div>-->
+<!--								-->
+<!--							</div>-->
+<!---->
+<!--						</div>-->
+<!--					</div>-->
 				</div>
 				<div class='col-sm-9'>
 					<h5 class='judul-transaksi'>
@@ -316,13 +316,14 @@ function chg_byr(val, indexnya){
 				url : url,
 				type : "POST",
 				success:function(response){
+                    console.log(response)
 					var dt_json = JSON.parse(response);
-					var paymentType = dt_json['PaymentMethod'];
+					var paymentType = dt_json['value'];
 					$.each(paymentType, function( key, value ) {					 
 						$('.payType_'+indexnya).find('option').remove().end();
 					});
-					$.each(paymentType, function( key, value ) {					 
-						$('.payType_'+indexnya).append($('<option/>').attr("value", value.PaymentCode).text(value.PaymentDescription));
+					$.each(paymentType, function( key, value ) {
+						$('.payType_'+indexnya).append($('<option/>').attr("value", value.Code).text(value.Description));
 					});
 				}
 			});
@@ -360,7 +361,7 @@ function bayarBaru(nominal){
 		Baris += "<td>"+Nomor+"</td>";
 		Baris += "<td>";
 		Baris += "<select name='type_bayar[]' class='form-control input-sm paymentType_"+Nomor+"' style='cursor: pointer;' onchange='chg_byr(this.value,"+Nomor+")'>";
-		//	Baris += "<option value=''>- Pilih jenis bayar -</option>";
+			Baris += "<option value=''>- Pilih jenis bayar -</option>";
 		Baris += "</select>";
 			
 		Baris += "</td>";
@@ -387,11 +388,12 @@ function bayarBaru(nominal){
 		success:function(response){
 		console.log(response);
 			var dt_json = JSON.parse(response);
-			var paymentType = dt_json['PaymentType'];
-			$.each(paymentType, function( key, value ) {
+			var paymentType = dt_json['value'];
+            const unique = [...new Set(paymentType.map(item => item.Payment_Type))];
+			$.each(unique, function( key, value ) {
 			 //console.log(  value.TypeCode + ": " + value.TypeDesc );
 			 	//Payment += '<option value="'+value.TypeCode+'">"'+ value.TypeDesc +'"</option>';
-				$('.paymentType_'+Nomor).append($('<option/>').attr("value", value.TypeCode).text(value.TypeDesc));
+				$('.paymentType_'+Nomor).append($('<option/>').attr("value", value).text(value));
 			});
 		}
 	});
@@ -838,23 +840,34 @@ $(document).on('keydown', 'body', function(e){
 });
 
 $(document).on('click', '#Simpann', function(){
-	if (document.getElementById("telp_pelanggan").innerHTML == "-"){
-		alert("Pilih Pelanggan");
-	}
-	else if(TotalBayaranku_ < $('#grnd_ttl').val())
-		alert("Jumlah Bayar lebih kecil dari Total Pembelian");
-	else {
-		$('.modal-dialog').removeClass('modal-lg');
-		$('.modal-dialog').addClass('modal-sm');
-		$('#ModalHeader').html('Konfirmasi');
-		$('#ModalContent').html("Apakah anda yakin ingin menyimpan transaksi ini ?");
-		$('#ModalFooter').html("<button type='button' class='btn btn-primary' id='SimpanTransaksi'>Ya, saya yakin</button><button type='button' class='btn btn-default' data-dismiss='modal'>Batal</button>");
-		$('#ModalGue').modal('show');
+	// if (document.getElementById("telp_pelanggan").innerHTML == "-"){
+	// 	alert("Pilih Pelanggan");
+	// }
+	// else if(TotalBayaranku_ < $('#grnd_ttl').val())
+	// 	alert("Jumlah Bayar lebih kecil dari Total Pembelian");
+	// else {
+	// 	$('.modal-dialog').removeClass('modal-lg');
+	// 	$('.modal-dialog').addClass('modal-sm');
+	// 	$('#ModalHeader').html('Konfirmasi');
+	// 	$('#ModalContent').html("Apakah anda yakin ingin menyimpan transaksi ini ?");
+	// 	$('#ModalFooter').html("<button type='button' class='btn btn-primary' id='SimpanTransaksi'>Ya, saya yakin</button><button type='button' class='btn btn-default' data-dismiss='modal'>Batal</button>");
+	// 	$('#ModalGue').modal('show');
+    //
+	// 	setTimeout(function(){
+	// 		$('button#SimpanTransaksi').focus();
+	// 	}, 500);
+	// }
 
-		setTimeout(function(){ 
-			$('button#SimpanTransaksi').focus();
-		}, 500);
-	}
+    $('.modal-dialog').removeClass('modal-lg');
+    $('.modal-dialog').addClass('modal-sm');
+    $('#ModalHeader').html('Konfirmasi');
+    $('#ModalContent').html("Apakah anda yakin ingin menyimpan transaksi ini ?");
+    $('#ModalFooter').html("<button type='button' class='btn btn-primary' id='SimpanTransaksi'>Ya, saya yakin</button><button type='button' class='btn btn-default' data-dismiss='modal'>Batal</button>");
+    $('#ModalGue').modal('show');
+
+    setTimeout(function(){
+        $('button#SimpanTransaksi').focus();
+    }, 500);
 });
 
 $(document).on('click', 'button#SimpanTransaksi', function(){
@@ -883,6 +896,7 @@ function SimpanTransaksi(){
 	FormData += "&" + $('#TabelBayar tbody input').serialize();
 	FormData += "&" + $('#TabelBayar tbody select').serialize();
 	//console.log(FormData);
+    $('#ModalGue').modal('hide');
 	$.ajax({
 		url: "<?php echo site_url('penjualan/simpan_transaksi'); ?>",
 		type: "POST",
@@ -890,9 +904,7 @@ function SimpanTransaksi(){
 		data: FormData,
 		dataType:'json',
 		success: function(data){
-			console.log(data);
-			if(data.Status == 1){
-				$('#ModalGue').modal('hide');
+			if(data.status == "Posted"){
 				alert('Penjualan Sukses');
 				window.location.href="<?php echo site_url('penjualan/ctak_trans'); ?>";
 				//window.open('<?php echo site_url('penjualan/ctak_trans'); ?>');
@@ -902,7 +914,8 @@ function SimpanTransaksi(){
 				$('.modal-dialog').removeClass('modal-lg');
 				$('.modal-dialog').addClass('modal-sm');
 				$('#ModalHeader').html('Error!');
-				$('#ModalContent').html(data.Message);
+				$('#ModalContent').html("Gagal menyimpan penjualan");
+				$('#ModalContent').html('Error');
 				$('#ModalFooter').html("<button type='button' class='btn btn-primary' data-dismiss='modal' autofocus>Ok</button>");
 				$('#ModalGue').modal('show');
 			}	

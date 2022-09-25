@@ -11,6 +11,7 @@ class Send_api
 	
 	
 	function send_data($url= '', $data=array()){
+        $url = str_replace(" ", "%20", $url);
 		$fields = array();
 		$headers = array(
 			'Content-Type:application/json',
@@ -35,6 +36,7 @@ class Send_api
             $this->send_data($url, $data);
         }
 		curl_close($ch);
+        log_message("info", sprintf("URL: %s, BODY: %s, RESPONSE: %s", $url, json_encode($data), $result));
 		return $result;
 	}
 
