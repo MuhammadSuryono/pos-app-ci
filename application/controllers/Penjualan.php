@@ -126,7 +126,7 @@ class Penjualan extends MY_Controller
 			$dt = array();
 			$code 	= !empty($this->input->post('Code')) ? $this->input->post('Code') : '*';
 			$filter = '$filter';
-			$url = URL_API.'/Company(\'be489792-ee2f-ed11-97e8-000d3aa1ef31\')/POS_Item?$filter=Gen_Product_Posting_Group eq ' . sprintf("'%s'", $code) ;
+			$url = URL_API.'/Company(\'be489792-ee2f-ed11-97e8-000d3aa1ef31\')/POS_Item?$filter=Gen_Product_Posting_Group eq ' . sprintf("'%s'", $code) . " and Location_Filter eq '" . $this->session->userdata('storeId') . "'" ;
 			
 			
 			$data_api = $this->send_api->get_data($url);

@@ -20,12 +20,15 @@ class Barang extends MY_Controller
 			//'StoreID'	=> $store_id,
 			'StoreID'	=> $this->session->userdata('storeId')
 		);
-		$url = URL_API.'item/ViewItemStock';
-		$data_api = $this->send_api->send_data($url, $post_data);
-		/*echo "<pre>";print_r($url);echo "</pre>";
-		echo "<pre>";print_r($post_data);echo "</pre>";
-		echo "<pre>";print_r($data_api);echo "</pre>";exit;*/
-		$dt['itemku'] = json_decode($data_api);
+		$filter = '$filter';
+		$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Item?$filter=Location_Filter eq '" . $this->session->userdata('storeId') . "'" ;
+			
+			
+		$data_api = $this->send_api->get_data($url);
+		// echo "<pre>";print_r($url);echo "</pre>";
+		// echo "<pre>";print_r($post_data);echo "</pre>";
+		// echo "<pre>";print_r($data_api);echo "</pre>";exit;
+		$dt['itemku'] = json_decode($data_api)->value;
 		$this->load->view('barang/barang_data', $dt);
 	}
 	

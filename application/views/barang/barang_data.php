@@ -33,16 +33,16 @@
 					</thead>
                     <tbody>
                     <?php 
-						if(!empty($itemku->Item)){
+						if(!empty($itemku)){
 							
-							foreach($itemku->Item as $it){
+							foreach($itemku as $it){
 								echo '<tr>';
-								echo '<td>'.$it->Code.'</td>';
-								echo '<td>'.$it->Name.'</td>';
+								echo '<td>'.$it->No.'</td>';
+								echo '<td>'.$it->Description.'</td>';
 								//echo '<td>'.$it->Category.'</td>';
 								//echo '<td>'.$it->Point.'</td>';
 								//echo '<td>'.$it->Brand.'</td>';
-								echo '<td>'.$it->StrStock.'</td>';
+								echo '<td>'.$it->Inventory.'</td>';
 								//echo '<td align="right">'.number_format($it->Harga,2,',','.').'</td>';
 								//echo '<td>'.$it->Discount.'</td>';
 								echo '</tr>';
