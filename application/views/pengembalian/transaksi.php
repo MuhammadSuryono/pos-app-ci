@@ -44,9 +44,9 @@ if($available < 1){
                                         <option value="">-- Pilih -- </option>
                                         <?php
 										
-											if(!empty($nota->SalesOrder)){
-												foreach($nota->SalesOrder as $n){
-													 echo '<option value='.$n->OrderNo.'>'.$n->OrderNo.'</option>';
+											if(!empty($nota)){
+												foreach($nota as $n){
+													 echo '<option value='.$n->no.'>'.$n->no.'</option>';
 												}
 											}
 										?>										

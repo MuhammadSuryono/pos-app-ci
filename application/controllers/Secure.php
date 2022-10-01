@@ -35,11 +35,14 @@ class Secure extends MY_Controller
 			$data_api = $this->send_api->send_data($url, $post_data);
 			$dt = json_decode($data_api);
 			$status = $dt->value;
-			// var_dump($status, $dt);
-			// exit();
 			if($status != "Failed"){
+                $explodeStatus = explode(";",$status);
 //				$user = $dt->User;
+                $status = $explodeStatus[0];
 				$applevel = 'KASIR';
+                if ($explodeStatus[1] == 'Yes') {
+                    $applevel = 'MANAGER';
+                }
 //				if ($user->StoreId == 'POS-OWNER'){
 //					$applevel = 'OWNER';
 //				} else if ($user->StoreId == 'POS-MGR'){
@@ -118,7 +121,7 @@ class Secure extends MY_Controller
 		$dt = json_decode($data_api);
 		$open_close = $dt->OpenClose;
 		$status = $open_close->Status == '0' ? $open_close->Status : 1;
-		$this->session->set_userdata('available', $status);	
+		$this->session->set_userdata('available', 0);
 		echo json_encode($dt);
 	}
 	
