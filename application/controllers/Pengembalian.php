@@ -357,7 +357,7 @@ class Pengembalian extends MY_Controller
         $dataPayment = $detailPayment->value[0];
 
         $bodySalesInvoicePayment = [
-            "No"=> 5,
+            "No"=> 1000,
             "SalesOrderNo"=> $lastCode,
             "PaymentMethodCode"=> $dataPayment->PaymentMethodCode,
             "NominalPayment"=> -(int)$dataPayment->NominalPayment,
