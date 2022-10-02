@@ -327,7 +327,7 @@ class Pengembalian extends MY_Controller
             "PaymentMethod"=> 'CASH',
             "POSTransTime" => date('h:m:i')
         ];
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_SalesCrMemo";
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders";
         $data_api = $this->send_api->send_data($url, $bodySalesInvoiceHeader);
 
         $data_master = $this->session->userdata('data_master');
@@ -348,7 +348,7 @@ class Pengembalian extends MY_Controller
                 "unitPrice"=> (int)$sales['UnitPrice']
             ];
         }
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_SalesCrMemoLine";
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines";
         $data_api = $this->send_api->send_data($url, count($ReturOrderLine) == 1 ? $ReturOrderLine[0] : ["apiSalesLines" => $ReturOrderLine]);
 
         $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Payment?$filter=SalesOrderNo eq '$data_master[no_nota]'";
@@ -371,7 +371,7 @@ class Pengembalian extends MY_Controller
 
         $bodySubmit = ["invoiceNo" => $lastCode];
 
-        $url = URL_API."/POS_Integration_PostingCrMemo?Company=MKS%20DEMO";
+        $url = URL_API."/POS_Integration_PostingPOS?Company=MKS%20DEMO";
         $data_api = $this->send_api->send_data($url, $bodySubmit);
         echo json_encode(['status' => 'Posted']);
 	}
