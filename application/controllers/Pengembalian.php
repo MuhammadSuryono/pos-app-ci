@@ -315,6 +315,8 @@ class Pengembalian extends MY_Controller
             $splitCode[2] = $countCode;
             $lastCode = join("-", $splitCode);
         }
+		
+        $data_master = $this->session->userdata('data_master');
 
         $bodySalesInvoiceHeader = [
             "no" => $lastCode,
@@ -323,14 +325,14 @@ class Pengembalian extends MY_Controller
             "sellToCustomerNo"=> "001",
             "sellToCustomerName"=> "Cibubur POS",
             "shipmentDate"=> date("Y-m-d"),
-            "ExternalDocNo"=> $lastCode,
+            "ExternalDocNo"=> $data_master["no_nota"],
             "PaymentMethod"=> 'CASH',
-            "POSTransTime" => date('h:m:i')
+            "POSTransTime" => date('h:m:i'),
+			"Appliestodoctype" => "Invoice"
         ];
         $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders";
         $data_api = $this->send_api->send_data($url, $bodySalesInvoiceHeader);
 
-        $data_master = $this->session->userdata('data_master');
         $salesOrder = $this->session->userdata('SalesOrderLine');
         $ReturOrderLine = array();
         foreach ($salesOrder as $key => $sales) {
@@ -350,7 +352,7 @@ class Pengembalian extends MY_Controller
             $ReturOrderLine[] = $returnData;
 
 			$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines";
-			$data_api = $this->send_api->send_data($url, ["apiSalesLines" => [$returnData]]);
+			$data_api = $this->send_api->send_data($url, [$returnData]);
         }
 
         $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Payment?$filter=SalesOrderNo eq '$data_master[no_nota]'";
