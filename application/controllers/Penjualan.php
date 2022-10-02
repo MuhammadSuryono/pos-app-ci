@@ -237,7 +237,7 @@ class Penjualan extends MY_Controller
                 "unitOfMeasure"=> "Bottle",
                 "LocationCode"=> "MKS03",
                 "quantity"=> (int)$sales['Qty'],
-                "DiscountPercent"=> 0,
+//                "DiscountPercent"=> 0,
                 "unitPrice"=> (int)$sales['UnitPrice'],
                 "DiscountAmount" => (int)$sales['Discount']
             ];
@@ -264,6 +264,7 @@ class Penjualan extends MY_Controller
         $url = URL_API."/POS_Integration_PostingPOS?Company=MKS%20DEMO";
         $data_api = $this->send_api->send_data($url, $bodySubmit);
 
+        $this->session->set_userdata('invoiceNo', $lastCode);
 		echo json_encode(['status' => 'Posted']);
 		
 	}
@@ -350,13 +351,22 @@ class Penjualan extends MY_Controller
 	
 	public function ctak_trans(){
 		$out = '';
-		//$this->load->model('Setting_m');
-		////$opsi_val_arr = $this->Setting_m->get_key_val();
-		//foreach ($opsi_val_arr as $key => $value){
-			//$out[$key] = $value;
-		//}
 		$dt['out'] = $out;
-		$this->load->view('penjualan/cetak_v', $dt);
+        $numberInvoice = $this->session->userdata('invoiceNo');
+
+        $filter = '$filter';
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PostedSalesInvoice?$filter=No eq '$numberInvoice'";
+        $data_api = $this->send_api->get_data($url, []);
+        $dataHeader = json_decode($data_api);
+
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PostedSalesInvoiceLine?$filter=Document_No eq '$numberInvoice'";
+        $data_api = $this->send_api->get_data($url, []);
+        $dataLines = json_decode($data_api);
+        
+        $dt["header"] = $dataHeader->value[0];
+        $dt["lines"] = $dataLines->value;
+        
+        $this->load->view('penjualan/cetak_v', $dt);
 	}
 
 	public function transaksi_cetaks(){
