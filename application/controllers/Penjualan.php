@@ -225,7 +225,7 @@ class Penjualan extends MY_Controller
         $salesOrder = $this->session->userdata('SalesOrderLine');
         $bodyInvoiceLine = array();
         foreach ($salesOrder as $key => $sales) {
-            $bodyInvoiceLine[] = [
+            $dataSales = [
                 "DocumentType"=> "Invoice",
                 "DocumentNo"=> $lastCode,
                 "lineNo"=> 10000 + ($key * 10000) ,
@@ -238,9 +238,10 @@ class Penjualan extends MY_Controller
                 "DiscountPercent"=> (int)$sales['Discount'],
                 "unitPrice"=> (int)$sales['UnitPrice']
             ];
+			$bodyInvoiceLine[] = $dataSales;
+			$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines";
+			$data_api = $this->send_api->send_data($url, $dataSales);
         }
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines";
-        $data_api = $this->send_api->send_data($url, count($bodyInvoiceLine) == 1 ? $bodyInvoiceLine[0] : ["apiSalesLines" => $bodyInvoiceLine]);
 
         $bodySalesInvoicePayment = [
             "No"=> 3,
