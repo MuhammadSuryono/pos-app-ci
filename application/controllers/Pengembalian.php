@@ -334,7 +334,7 @@ class Pengembalian extends MY_Controller
         $salesOrder = $this->session->userdata('SalesOrderLine');
         $ReturOrderLine = array();
         foreach ($salesOrder as $key => $sales) {
-            $ReturOrderLine[] = [
+			$returnData = [
                 "DocumentType"=> "Credit Memo",
                 "DocumentNo"=> $lastCode,
                 "lineNo"=> 10000 + ($key * 10000) ,
@@ -347,9 +347,11 @@ class Pengembalian extends MY_Controller
                 "DiscountPercent"=> (int)$sales['Discount'],
                 "unitPrice"=> (int)$sales['UnitPrice']
             ];
+            $ReturOrderLine[] = $returnData;
+
+			$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines";
+			$data_api = $this->send_api->send_data($url, ["apiSalesLines" => $returnData]);
         }
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines";
-        $data_api = $this->send_api->send_data($url, count($ReturOrderLine) == 1 ? $ReturOrderLine[0] : ["apiSalesLines" => $ReturOrderLine]);
 
         $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Payment?$filter=SalesOrderNo eq '$data_master[no_nota]'";
         $data_api = $this->send_api->get_data($url, []);
@@ -357,7 +359,6 @@ class Pengembalian extends MY_Controller
         $dataPayment = $detailPayment->value[0];
 
         $bodySalesInvoicePayment = [
-            "No"=> 1000,
             "SalesOrderNo"=> $lastCode,
             "PaymentMethodCode"=> $dataPayment->PaymentMethodCode,
             "NominalPayment"=> -(int)$dataPayment->NominalPayment,
