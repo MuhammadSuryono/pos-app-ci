@@ -66,6 +66,7 @@ class Send_api
         $response = curl_exec($curl);
 
         curl_close($curl);
+        log_message("info", sprintf("URL: %s, BODY: %s, RESPONSE: %s", $url, json_encode($data), $response));
 
         if ($response === FALSE) {
             die('Send Error: ' . curl_error($curl));
@@ -96,6 +97,7 @@ class Send_api
 			die('Post Error: ' . curl_error($ch));
 		}
 		curl_close($ch);
+        log_message("info", sprintf("URL: %s, BODY: %s, RESPONSE: %s", $url, json_encode($data), $result));
 		return $result;
 	}
 

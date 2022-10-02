@@ -46,6 +46,7 @@ class Penjualan extends MY_Controller
 			$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_GenProductPostGroup?$filter=Show_in_POS eq true";
 			$data_api = $this->send_api->get_data($url);
 			$dt['category'] = json_decode($data_api)->value;
+			
 			$this->load->view('penjualan/transaksi', $dt);
 		}
 	}
@@ -128,7 +129,6 @@ class Penjualan extends MY_Controller
 			$filter = '$filter';
 			$url = URL_API.'/Company(\'be489792-ee2f-ed11-97e8-000d3aa1ef31\')/POS_Item?$filter=Gen_Product_Posting_Group eq ' . sprintf("'%s'", $code) . " and Location_Filter eq '" . $this->session->userdata('storeId') . "'" ;
 			
-			
 			$data_api = $this->send_api->get_data($url);
 				
 			$dt['itemku'] = json_decode($data_api)->value;		
@@ -144,12 +144,12 @@ class Penjualan extends MY_Controller
 				'Code'		=> '',				
 				'LocationCode'	=> $this->session->userdata('storeId')
 			);
-			$url = URL_API.'SalesOrder/DiscountAdhoc';
-			$data_api = $this->send_api->send_data($url, $post_data);
+			$url = URL_API."/Company('MKS%20DEMO')/POS_Promotions";
+			$data_api = $this->send_api->get_data($url);
 				
-			$dt['itemku'] = json_decode($data_api);
+			$dt['itemku']->DiscountAdhoc = json_decode($data_api)->value;	
 
-			/*if($this->input->post('Code') == "PROMO LUXO" || $this->input->post('Code') == "PROMO LUXOFOOD" || $this->input->post('Code') == "PROMO - LUXO" || $this->input->post('Code') == "PROMO - LUXOFOOD")
+			if($this->input->post('Code') == "PROMO LUXO" || $this->input->post('Code') == "PROMO LUXOFOOD" || $this->input->post('Code') == "PROMO - LUXO" || $this->input->post('Code') == "PROMO - LUXOFOOD")
 			{
 				foreach($dt['itemku']->DiscountAdhoc as $idx => $it)
 				{
@@ -168,7 +168,7 @@ class Penjualan extends MY_Controller
 						unset($dt['itemku']->DiscountAdhoc[$idx]);
 					}
 				}	
-			}*/
+			}
 
 			if($search !== '')
 			{
@@ -186,15 +186,16 @@ class Penjualan extends MY_Controller
 	}
 	function load_detail_promo(){
 		$level = $this->session->userdata('ap_level');
-			$dt = array();
-			$search	= !empty($this->input->post('Search')) ? strtoupper($this->input->post('Search')) : '';
-			$post_data = array(
-				'Code'		=> $search,				
-				'LocationCode'	=> $this->session->userdata('storeId')
-			);
-			$url = URL_API.'SalesOrder/DiscountAdhoc';
-			$data_api = $this->send_api->send_data($url, $post_data);
-			echo json_encode($data_api);
+        $dt = array();
+        $search	= !empty($this->input->post('Search')) ? strtoupper($this->input->post('Search')) : '';
+        $post_data = array(
+            'Code'		=> $search,
+            'LocationCode'	=> $this->session->userdata('storeId')
+        );
+        $filter = '$filter';
+        $url = URL_API."/Company('MKS%20DEMO')/POS_PromotionsSubform?$filter=Promo_Code eq '" . $search . "'";
+        $data_api = $this->send_api->get_data($url, $post_data);
+        echo $data_api;
 	}
 	
 	public function simpan_transaksi(){

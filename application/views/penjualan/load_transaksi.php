@@ -7,7 +7,7 @@
 **/
 	$id = '';
 								
-	if(!empty($itemku)){
+	if(!empty($itemku) && empty($itemku->DiscountAdhoc)){
 		foreach($itemku as $it){
 			$id = '';
 			$vatsts = '';
@@ -36,10 +36,10 @@
 	}
 	if(!empty($itemku->DiscountAdhoc)){
 		foreach($itemku->DiscountAdhoc as $it){			 
-				echo '<div class="col-sm-12 list-product itm_prd_promo" id="'.$it->Code.'">
+				echo '<div class="col-sm-12 list-product itm_prd_promo" id="'.$it->Promo_Code.'">
 						<div class="thumbnail get_product_promo">       			
 						<div class="caption">
-							<p style="color:#000; font-size:16px; margin: 0 0 -3px;"><b>'.$it->Code.' - '.$it->Description.'</b></p>
+							<p style="color:#000; font-size:16px; margin: 0 0 -3px;"><b>'.$it->Promo_Code.' - '.$it->Description.'</b></p>
 						</div>
 						
 						</div>
@@ -67,22 +67,20 @@ $('.itm_prd_promo').click(function(){
 		type : "POST",
 		beforeSend  : function(){ $('#container-loader-list').show(); },
 		success:function(response){
-			if(response != ''){
-				
-				var data = JSON.parse(response);
-				var tes = JSON.parse(data);
-				var head = tes["DiscountAdhoc"][0];
-				$(head["line"]).each(function (index) {
-					var disc_int = parseInt($(this).attr('DiscountAmount').replace(',', '').replace(',', ''));
-					
-					var price_int = parseInt($(this).attr('SalesPrice').replace(',', '').replace(',', ''));
-
-					list_cart_promo($(this).attr('ItemNo'), 
+			if(response !== ''){
+                let data = JSON.parse(response)
+                console.log(data)
+                data.value.forEach(function (index, e) {
+                    console.log(index, e)
+					var disc_int = index.Discount_Amount
+					var price_int = index.Sales_Price
+                    console.log(disc_int);
+					list_cart_promo(index.Item_No,
 					price_int,
-					parseInt($(this).attr('Qty')),
+					index.Quantity,
 					disc_int,
-					$(this).attr('VATGroup'),
-					$(this).attr('Description'));
+					index.VAT_Prod,
+					index.Description);
                 }); 
 				
 			}

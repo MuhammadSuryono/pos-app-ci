@@ -194,7 +194,21 @@ if($level !== 'admin')
 													</div>';											
 										}
 									}
-								?>      
+								?> 
+								
+								<?php
+									if(!empty($promo)){
+										foreach($promo as $cat){											
+											echo '<div class="col-sm-4 itm_cat_prd" id="'.$cat->Promo_Code.'">
+														<div class="thumbnail ">      			
+															<div class="caption">
+																<p style="font-size:20px"><b>'.$cat->Promo_Code.'</b></span></p>
+															</div>										
+														</div>
+													</div>';											
+										}
+									}
+								?>    
                             </div>							
 						</div>                      
 					</div>
