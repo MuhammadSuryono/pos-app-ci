@@ -350,7 +350,7 @@ class Pengembalian extends MY_Controller
             $ReturOrderLine[] = $returnData;
 
 			$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines";
-			$data_api = $this->send_api->send_data($url, ["apiSalesLines" => $returnData]);
+			$data_api = $this->send_api->send_data($url, ["apiSalesLines" => [$returnData]]);
         }
 
         $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Payment?$filter=SalesOrderNo eq '$data_master[no_nota]'";
