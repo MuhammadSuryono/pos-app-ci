@@ -219,6 +219,7 @@ class Penjualan extends MY_Controller
             "shipmentDate"=> date("Y-m-d"),
             "ExternalDocNo"=> $lastCode,
             "PaymentMethod"=> 'CASH',
+            "POSTransTime" => date('h:m:i'),
         ];
         $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders";
         $data_api = $this->send_api->send_data($url, $bodySalesInvoiceHeader);
@@ -236,8 +237,9 @@ class Penjualan extends MY_Controller
                 "unitOfMeasure"=> "Bottle",
                 "LocationCode"=> "MKS03",
                 "quantity"=> (int)$sales['Qty'],
-                "DiscountPercent"=> (int)$sales['Discount'],
-                "unitPrice"=> (int)$sales['UnitPrice']
+                "DiscountPercent"=> 0,
+                "unitPrice"=> (int)$sales['UnitPrice'],
+                "DiscountAmount" => (int)$sales['Discount']
             ];
 			$bodyInvoiceLine[] = $dataSales;
 			$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines";
