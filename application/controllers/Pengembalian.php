@@ -245,7 +245,7 @@ class Pengembalian extends MY_Controller
 			$nama_barang = array();
 			if($banyak_baris > 0){
 				foreach($detail_order as $db){
-					$kode_barang[] = $db->Document_No;
+					$kode_barang[] = $db->No;
 					$nama_barang[] = $db->Description;
 					$jml_beli[] = $db->Quantity;
 					$_disc[] = $db->Line_Discount_Percent;
