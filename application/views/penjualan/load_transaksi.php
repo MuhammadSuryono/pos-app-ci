@@ -122,7 +122,8 @@ function list_cart_promo(myID, harga, qty_promo, discount, vatstat, nama){
 		var baris = '<li class="item" id="item_'+myID+'">';
         baris += '<div class="product-info">';
 		baris +='<strong>'+ nama +'</strong>';
-		baris +='<p>';
+        baris +='<input type="hidden" class="pull-left" id="nama_'+myID+'" name="nama[]" value="'+ nama +'" style="margin-left:-10px;margin-top:5px;width:15%;text-align:center">';
+        baris +='<p>';
 		baris +='<span class="pull-left" style="margin-top:5px;width:120px;">Rp.'+harga+'</span>';
 		baris +='<a href="#" onclick="deletes(\'' +myID+ '\')" class="spn_hrg pull-right"><span class="glyphicon glyphicon-remove pull-right"></span></a>';
 		baris +='<span class="spn_hrg pull-right" id="spn_hrg_'+myID+'">'+harga+'</span>';
@@ -174,7 +175,8 @@ function list_cart(id){
 		var baris = '<li class="item" id="item_'+_id[0]+'">';
         baris += '<div class="product-info">';
 		baris +='<strong>'+ nama.split('!')[0] +'</strong>';
-		baris +='<p>';
+        baris +='<input type="hidden" class="pull-left" id="nama_'+_id[0]+'" name="nama[]" value="'+nama+'" style="margin-left:-10px;margin-top:5px;width:15%;text-align:center">';
+        baris +='<p>';
 		baris +='<span class="pull-left" style="margin-top:5px;width:120px;">Rp.'+harga+'</span>';
 		baris +='<a href="#" onclick="deletes(\'' +_id[0]+ '\')" class="spn_hrg pull-right"><span class="glyphicon glyphicon-remove pull-right"></span></a>';
 		baris +='<span class="spn_hrg pull-right" id="spn_hrg_'+_id[0]+'">'+harga+'</span>';

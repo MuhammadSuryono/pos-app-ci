@@ -233,11 +233,10 @@ class Penjualan extends MY_Controller
                 "lineNo"=> 10000 + ($key * 10000) ,
                 "type"=> "Item",
                 "no"=> $sales['ItemCode'],
-                "description"=> "ESTRELLA DAMM BEER - BOTTLE 330 ML",
+                "description"=> $sales["Nama"],
                 "unitOfMeasure"=> "Bottle",
                 "LocationCode"=> "MKS03",
                 "quantity"=> (int)$sales['Qty'],
-//                "DiscountPercent"=> 0,
                 "unitPrice"=> (int)$sales['UnitPrice'],
                 "DiscountAmount" => (int)$sales['Discount']
             ];
@@ -246,18 +245,19 @@ class Penjualan extends MY_Controller
 			$data_api = $this->send_api->send_data($url, $dataSales);
         }
 
-        $bodySalesInvoicePayment = [
-            "No"=> 3,
-            "SalesOrderNo"=> $lastCode,
-            "PaymentMethodCode"=> $this->input->post('type_pay')[0],
-            "NominalPayment"=> (int)join("", explode(".", $this->input->post('nilai_bayar')[0])),
-            "PaymentType"=> $this->input->post('type_bayar')[0] ?? 'CASH',
-            "QtyPoint"=> 0,
-            "NoNOTA"=> "",
-            "DeliveryAmount"=> 0
+        for ($i = 0; $i < count($this->input->post('nilai_bayar')); $i++) {
+            $bodySalesInvoicePayment = [
+                "SalesOrderNo"=> $lastCode,
+                "PaymentMethodCode"=> $this->input->post('type_pay')[$i],
+                "NominalPayment"=> (int)join("", explode(".", $this->input->post('nilai_bayar')[$i])),
+                "PaymentType"=> $this->input->post('type_bayar')[$i] ?? 'CASH',
+                "QtyPoint"=> 0,
+                "NoNOTA"=> "",
+                "DeliveryAmount"=> 0
             ];
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Payment";
-        $data_api = $this->send_api->send_data($url, $bodySalesInvoicePayment);
+            $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Payment";
+            $data_api = $this->send_api->send_data($url, $bodySalesInvoicePayment);
+        }
 
         $bodySubmit = ["invoiceNo" => $lastCode];
 
@@ -362,10 +362,15 @@ class Penjualan extends MY_Controller
         $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PostedSalesInvoiceLine?$filter=Document_No eq '$numberInvoice'";
         $data_api = $this->send_api->get_data($url, []);
         $dataLines = json_decode($data_api);
-        
+
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Payment?$filter=SalesOrderNo eq '$numberInvoice'";
+        $data_api = $this->send_api->get_data($url, []);
+        $payment = json_decode($data_api);
+
         $dt["header"] = $dataHeader->value[0];
         $dt["lines"] = $dataLines->value;
-        
+        $dt["payment"] = $payment->value;
+
         $this->load->view('penjualan/cetak_v', $dt);
 	}
 

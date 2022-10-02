@@ -276,8 +276,7 @@ $(document).ready(function(){
 					html = '';
                     let total = 0;
 					for(var i = 0; i < json.banyak_baris; i++){
-						console.log(json.hrg_satuan[i]);
-                        total += parseInt(json.total[i]);
+                        total += json.subTotal[i];
 						var no = Number(i)+1;
 						html +='<tr>';
 						html +='<td>'+no+'.</td>';
@@ -289,7 +288,7 @@ $(document).ready(function(){
 						//html +='<td align="center"><input type="checkbox" name="chk_return[]" value="'+json.dt_total[i]+'" class="chk_return" rel="'+json.total[i]+'"></td>';
 						html +='<tr>';
 					}
-                    $('#GrandBayar').html(total)
+                    $('#GrandBayar').html(json.grand_ttl)
 					$('#TabelPengembalian tbody').html(html);
 				}
 			});

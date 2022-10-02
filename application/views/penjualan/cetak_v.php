@@ -142,16 +142,18 @@ $sales_payment =  $print_dt->SalesPayment;
 	echo '<td colspan="5" align="right">Total Bayar</td>';
 	echo '<td align="right">'.str_replace(',', '.', number_format($totalbayar)).'</td>';
 	echo '</tr>';
-	foreach($sales_payment as $sp){
+    $totalPembayaran = 0;
+	foreach($payment as $sp){
+        $totalPembayaran += $sp->NominalPayment;
 		echo '<tr>';
-		echo '<td colspan="5" align="right">'.$sp->PaymentName.'</td>';
-		echo '<td align="right">'.str_replace(',', '.', number_format($sp->PaymentAmount)).'</td>';
+		echo '<td colspan="5" align="right">'.$sp->PaymentType.' - ' . $sp->PaymentMethodCode . '</td>';
+		echo '<td align="right">'.str_replace(',', '.', number_format($sp->NominalPayment)).'</td>';
 		echo '</tr>';
-		$stringPayment = $stringPayment . '@' . $sp->PaymentName . '#' . str_replace(',', '.',number_format($sp->PaymentAmount));
+		$stringPayment = $stringPayment . '@' . $sp->PaymentType . '#' . str_replace(',', '.',number_format($sp->NominalPayment));
 	}
 	echo '<tr>';
 	echo '<td colspan="5" align="right">Kembalian</td>';
-	echo '<td align="right">'.str_replace(',', '.', number_format($print_dt->Kembalian)).'</td>';
+	echo '<td align="right">'.str_replace(',', '.', number_format($totalPembayaran - $totalbayar)).'</td>';
 	echo '</tr>';
 	echo '<tr style="display:none">';
 	$totalsub = $sb_ttl_vat + $sb_ttl;

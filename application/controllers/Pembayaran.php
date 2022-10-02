@@ -37,6 +37,7 @@ class Pembayaran extends MY_Controller
 		//$this->cart->destroy();
 		//$this->load->library('cart');
 		$sb_ttl = $this->input->post('sb_ttl');
+		$nama = $this->input->post('nama');
 		$cod_item = $this->input->post('cod_item');
 		$jml_beli = $this->input->post('jml_beli');
 		$harga_ori = $this->input->post('harga_ori');
@@ -62,7 +63,8 @@ class Pembayaran extends MY_Controller
 					'Discount'	=> $_disc[$i],
 					'Point'		=> $point[$i],
 					'Barcode'	=> $barcode[$i],
-					'VATStatus' => $vatstat[$i]
+					'VATStatus' => $vatstat[$i],
+                    'Nama' => $nama[$i]
 				);
 			//}
 		}
