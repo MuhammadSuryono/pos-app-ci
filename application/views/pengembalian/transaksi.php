@@ -46,7 +46,7 @@ if($available < 1){
 										
 											if(!empty($nota)){
 												foreach($nota as $n){
-													 echo '<option value='.$n->no.'>'.$n->no.'</option>';
+													 echo '<option value='.$n->No.'>'.$n->No.'</option>';
 												}
 											}
 										?>										
@@ -274,8 +274,10 @@ $(document).ready(function(){
 					$('#id_pelanggan').val(json.id_pelanggan);
 					$('#return_val').html('Rp. 0');
 					html = '';
+                    let total = 0;
 					for(var i = 0; i < json.banyak_baris; i++){
 						console.log(json.hrg_satuan[i]);
+                        total += parseInt(json.total[i]);
 						var no = Number(i)+1;
 						html +='<tr>';
 						html +='<td>'+no+'.</td>';
@@ -287,7 +289,7 @@ $(document).ready(function(){
 						//html +='<td align="center"><input type="checkbox" name="chk_return[]" value="'+json.dt_total[i]+'" class="chk_return" rel="'+json.total[i]+'"></td>';
 						html +='<tr>';
 					}
-					
+                    $('#GrandBayar').html(total)
 					$('#TabelPengembalian tbody').html(html);
 				}
 			});
@@ -660,8 +662,7 @@ function SimpanTransaksi()
 		data: FormData,
 		dataType:'json',
 		success: function(data){
-			console.log(data);
-			if(data.Status == 1){
+			if(data.status === 'Posted'){
 				$('#ModalGue').modal('hide');
 				alert('Return Sukses');
 				window.location.href="<?php echo site_url('pengembalian/transaksi'); ?>";
@@ -672,7 +673,7 @@ function SimpanTransaksi()
 				$('.modal-dialog').removeClass('modal-lg');
 				$('.modal-dialog').addClass('modal-sm');
 				$('#ModalHeader').html('Oops !');
-				$('#ModalContent').html(data.pesan);
+				$('#ModalContent').html("Gagal simpan data");
 				$('#ModalFooter').html("<button type='button' class='btn btn-primary' data-dismiss='modal' autofocus>Ok</button>");
 				$('#ModalGue').modal('show');
 			}	

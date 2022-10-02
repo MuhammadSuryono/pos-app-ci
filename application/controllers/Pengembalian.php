@@ -31,7 +31,7 @@ class Pengembalian extends MY_Controller
 			'EndDate'		=> $date,
 			'PosId'		=> $this->session->userdata('storeId')
 		);
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders";
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PostedSalesInvoice";
 		$data_api = $this->send_api->get_data($url, $post_data);
 						
 		$dt['nota'] = json_decode($data_api)->value;
@@ -224,7 +224,7 @@ class Pengembalian extends MY_Controller
 			'OrderNo'		=> $no_nota
 		);
         $filter = '$filter';
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders?$filter=no eq '$no_nota'";
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PostedSalesInvoice?$filter=No eq '$no_nota'";
         $data_api = $this->send_api->get_data($url, $post_data);
 		$this->session->set_userdata('SalesOrderLine', '');
 		$detail = json_decode($data_api);
@@ -236,7 +236,7 @@ class Pengembalian extends MY_Controller
         $detailPayment = json_decode($data_api);
         $dataPayment = $detailPayment->value[0];
 
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines?$filter=DocumentNo eq '$no_nota'";
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PostedSalesInvoiceLine?$filter=Document_No eq '$no_nota'";
         $data_api = $this->send_api->get_data($url, $post_data);
         $lines = json_decode($data_api);
 		$detail_order = $lines->value;
@@ -245,26 +245,26 @@ class Pengembalian extends MY_Controller
 			$nama_barang = array();
 			if($banyak_baris > 0){
 				foreach($detail_order as $db){
-					$kode_barang[] = $db->no;
-					$nama_barang[] = $db->description;
-					$jml_beli[] = $db->quantity;
-					$_disc[] = $db->DiscountPercent;
-					$hrg_satuan[] =  number_format($db->unitPrice,2,',','.');
-					$total[] =  number_format(($db->unitPrice * $db->quantity) - $db->DiscountPercent == 0 ? 0 : (($db->unitPrice * $db->DiscountPercent) / 100),2,',','.');
-					$dt_total[] = $db->no.'_'.$db->quantity.'_'.$db->unitPrice.'_'.($db->unitPrice * $db->quantity) - $db->DiscountPercent == 0 ? 0 : (($db->unitPrice * $db->DiscountPercent) / 100);
-					$hrg_satuans[] =  $db->UnitPrice;
+					$kode_barang[] = $db->Document_No;
+					$nama_barang[] = $db->Description;
+					$jml_beli[] = $db->Quantity;
+					$_disc[] = $db->Line_Discount_Percent;
+					$hrg_satuan[] =  number_format($db->Line_Amount,2,',','.');
+					$total[] =  number_format($db->Line_Amount * $db->Quantity,2,',','.');
+					$dt_total[] = $db->No.'_'.$db->Quantity.'_'.$db->Line_Amount.'_'.$db->Line_Amount * $db->Quantity;
+					$hrg_satuans[] =  $db->Line_Amount;
 					$point[] =  $db->Point;
-					$barcode[] = $db->no;
+					$barcode[] = $db->No;
 				}
 			}
-			$json['grand_bayar'] = (!empty($dataPayment->NominalPayment)) ? number_format($dataPayment->NominalPayment,2,',','.') : 0;
+			$json['grand_bayar'] = (!empty($data_order->Amount)) ? number_format($data_order->Amount,2,',','.') : 0;
 			$json['ppn'] = 0;
-			$CustomerNo = $data_order->sellToCustomerNo;
-			$json['id_pelanggan'] = $data_order->sellToCustomerNo;
-			$json['grand_ttl'] = (!empty($dataPayment->NominalPayment)) ? number_format($dataPayment->NominalPayment,2,',','.') : 0;
+			$CustomerNo = $data_order->Bill_to_Customer_No;
+			$json['id_pelanggan'] = $data_order->Bill_to_Customer_No;
+			$json['grand_ttl'] = (!empty($data_order->Amount)) ? number_format($data_order->Amount,2,',','.') : 0;
 			$json['nama_kasir']	= (!empty($data_order->KasirName)) ? $data_order->KasirName : "<small><i>POS-03</i></small>";
-			$json['tanggal'] = (!empty($data_order->PostingDate)) ? date('d F Y', strtotime($data_order->PostingDate)) : "<small><i>Tidak ada</i></small>";
-			$json['nama'] = (!empty($data_order->sellToCustomerName)) ? $data_order->sellToCustomerName : "<small><i>Tidak ada</i></small>";
+			$json['tanggal'] = (!empty($data_order->Posting_Date)) ? date('d F Y', strtotime($data_order->Posting_Date)) : "<small><i>Tidak ada</i></small>";
+			$json['nama'] = (!empty($data_order->Bill_to_Name)) ? $data_order->Bill_to_Name : "<small><i>Tidak ada</i></small>";
 			$json['telp'] = (!empty($data_order->PhoneNo)) ? $data_order->PhoneNo : "<small><i>Tidak ada</i></small>";
 			$json['nama_brg'] = $nama_barang;
 			$json['jml_beli'] = $jml_beli;
@@ -297,40 +297,83 @@ class Pengembalian extends MY_Controller
 	}
 	
 	public function simpan_return(){
-		$data_master = $this->session->userdata('data_master');
-		
-		$cart = $this->session->userdata('SalesOrderLine');
-		$id_kasir =  $this->session->userdata('ap_id_user');
-		$CountLine =  count($cart);
-		$ReturOrderLine = array();
-		foreach($cart as $c){
-			$ReturOrderLine[] = array(
-				'ItemCode'	=> $c['ItemCode'],
-				'Qty'		=> $c['Qty'],
-				'UnitPrice'	=> $c['UnitPrice'],
-				'Discount'	=> $c['Discount'],
-				'Point'		=> $c['Point'],
-				'Barcode'	=> $c['Barcode']
-			);
-		}
-		$ip=$this->input->ip_address();
-		$post_data = array(
-			'OrderNo'			=> 0,
-			'IPPos'				=> $ip,
-			'PosId'				=> $this->session->userdata('storeId'),
-			'DocumentType'		=> 5,
-			'CustomerNo'		=> $data_master['CustomerNo'],
-			'UserCode'			=> $id_kasir,
-			'CountLine'			=> $CountLine,
-			'OrderNoToReturn'	=> $data_master['no_nota'],
-			//'CountPayment'		=> $CountPayment,
-			'ReturOrderLine'	=> $ReturOrderLine,
-			//'SalesPayment'		=> $sales_pay,
-			'Kembalian'			=> 0
-		);
-		$url = URL_API.'ReturOrder/Transaction/';
-		$data_api = $this->send_api->send_data($url, $post_data);
-		echo $data_api;
+
+        $filter = '$filter';
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/NoSeriesLines?$filter=Series_Code eq 'S-CR'";
+        $data_api = $this->send_api->get_data($url);
+        $resp = json_decode($data_api)->value;
+        $lastCode = $resp[count($resp) - 1]->Last_No_Used;
+        $first = false;
+        if ($lastCode == "") {
+            $lastCode = $resp[count($resp) - 1]->Starting_No;
+            $first = true;
+        }
+
+        if (!$first) {
+            $splitCode = explode("-", $lastCode);
+            $countCode = sprintf("%05d", $splitCode[2] + 1);
+            $splitCode[2] = $countCode;
+            $lastCode = join("-", $splitCode);
+        }
+
+        $bodySalesInvoiceHeader = [
+            "no" => $lastCode,
+            "DocumentType"=> "Credit Memo",
+            "PostingDate"=> date("Y-m-d"),
+            "sellToCustomerNo"=> "001",
+            "sellToCustomerName"=> "Cibubur POS",
+            "shipmentDate"=> date("Y-m-d"),
+            "ExternalDocNo"=> $lastCode,
+            "PaymentMethod"=> 'CASH',
+            "POSTransTime" => date('h:m:i')
+        ];
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_SalesCrMemo";
+        $data_api = $this->send_api->send_data($url, $bodySalesInvoiceHeader);
+
+        $data_master = $this->session->userdata('data_master');
+        $salesOrder = $this->session->userdata('SalesOrderLine');
+        $ReturOrderLine = array();
+        foreach ($salesOrder as $key => $sales) {
+            $ReturOrderLine[] = [
+                "DocumentType"=> "Credit Memo",
+                "DocumentNo"=> $lastCode,
+                "lineNo"=> 10000 + ($key * 10000) ,
+                "type"=> "Item",
+                "no"=> $sales['ItemCode'],
+                "description"=> "ESTRELLA DAMM BEER - BOTTLE 330 ML",
+                "unitOfMeasure"=> "Bottle",
+                "LocationCode"=> "MKS03",
+                "quantity"=> (int)$sales['Qty'],
+                "DiscountPercent"=> (int)$sales['Discount'],
+                "unitPrice"=> (int)$sales['UnitPrice']
+            ];
+        }
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_SalesCrMemoLine";
+        $data_api = $this->send_api->send_data($url, count($ReturOrderLine) == 1 ? $ReturOrderLine[0] : ["apiSalesLines" => $ReturOrderLine]);
+
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Payment?$filter=SalesOrderNo eq '$data_master[no_nota]'";
+        $data_api = $this->send_api->get_data($url, []);
+        $detailPayment = json_decode($data_api);
+        $dataPayment = $detailPayment->value[0];
+
+        $bodySalesInvoicePayment = [
+            "No"=> 5,
+            "SalesOrderNo"=> $lastCode,
+            "PaymentMethodCode"=> $dataPayment->PaymentMethodCode,
+            "NominalPayment"=> -(int)$dataPayment->NominalPayment,
+            "PaymentType"=> $dataPayment->PaymentType,
+            "QtyPoint"=> 0,
+            "NoNOTA"=> "",
+            "DeliveryAmount"=> 0
+        ];
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Payment";
+        $data_api = $this->send_api->send_data($url, $bodySalesInvoicePayment);
+
+        $bodySubmit = ["invoiceNo" => $lastCode];
+
+        $url = URL_API."/POS_Integration_PostingCrMemo?Company=MKS%20DEMO";
+        $data_api = $this->send_api->send_data($url, $bodySubmit);
+        echo json_encode(['status' => 'Posted']);
 	}
 
 	public function transaksi_cetak()
