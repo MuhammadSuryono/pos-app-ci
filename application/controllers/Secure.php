@@ -38,9 +38,9 @@ class Secure extends MY_Controller
 			if($status != "Failed"){
                 $explodeStatus = explode(";",$status);
 //				$user = $dt->User;
-                $status = $explodeStatus[0];
+                $status = $explodeStatus[1];
 				$applevel = 'KASIR';
-                if ($explodeStatus[1] == 'Yes') {
+                if ($explodeStatus[3] == 'Yes') {
                     $applevel = 'MANAGER';
                 }
 //				if ($user->StoreId == 'POS-OWNER'){
@@ -67,7 +67,8 @@ class Secure extends MY_Controller
 					'storeId'	=> $status,
 					'available'	=> 1,
 					'ap_level_caption' => $applevel,
-//					'ap_store_name' => $user->StoreName,
+                    'customer_no' => $explodeStatus[0],
+					'ap_store_name' => $explodeStatus[2],
 //					'ap_store_address' => $user->Address,
 //					'ap_store_postcode' => $user->PostCode,
 //					'ap_store_HP' => $user->HP,

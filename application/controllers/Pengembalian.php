@@ -31,7 +31,9 @@ class Pengembalian extends MY_Controller
 			'EndDate'		=> $date,
 			'PosId'		=> $this->session->userdata('storeId')
 		);
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PostedSalesInvoice";
+        $filter = '$filter';
+        $location = $this->session->userdata('storeId');
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PostedSalesInvoice?$filter=LocationCode eq '$location'";
 		$data_api = $this->send_api->get_data($url, $post_data);
 						
 		$dt['nota'] = json_decode($data_api)->value;
@@ -250,20 +252,24 @@ class Pengembalian extends MY_Controller
 					$nama_barang[] = $db->Description;
 					$jml_beli[] = $db->Quantity;
 					$_disc[] = $db->Line_Discount_Percent;
-					$hrg_satuan[] =  number_format($db->Line_Amount,2,',','.');
-					$total[] =  number_format($db->Line_Amount * $db->Quantity,2,',','.');
-					$dt_total[] = $db->No.'_'.$db->Quantity.'_'.$db->Line_Amount.'_'.$db->Line_Amount * $db->Quantity;
-					$hrg_satuans[] =  $db->Line_Amount;
+					$hrg_satuan[] =  number_format($db->Unit_Price,2,',','.');
+					$total[] =  number_format($db->Unit_Price * $db->Quantity,2,',','.');
+					$dt_total[] = $db->No.'_'.$db->Quantity.'_'.$db->Unit_Price.'_'.$db->Line_Amount * $db->Quantity;
+					$hrg_satuans[] =  $db->Unit_Price;
 					$point[] =  $db->Point;
 					$barcode[] = $db->No;
-                    $subTotal[] = $db->Line_Amount * $db->Quantity;
-                    $grandTotal +=  $db->Line_Amount * $db->Quantity;
+                    $subTotal[] = $db->Unit_Price * $db->Quantity;
+                    $grandTotal +=  $db->Unit_Price * $db->Quantity;
+                    $locationCode[] =  $db->Location_Code;
+                    $Unit_of_Measure[] =  $db->Unit_of_Measure;
 				}
 			}
 			$json['grand_bayar'] = (!empty($data_order->Amount)) ? number_format($data_order->Amount,2,',','.') : 0;
 			$json['ppn'] = 0;
-			$CustomerNo = $data_order->Bill_to_Customer_No;
-			$json['id_pelanggan'] = $data_order->Bill_to_Customer_No;
+			$CustomerNo = $data_order->Sell_to_Customer_No;
+            $CustomerName = $data_order->Sell_to_Customer_Name;
+            $paymentMethodeCode = $data_order->PaymentMethodCode;
+			$json['id_pelanggan'] = $data_order->Sell_to_Customer_No;
 			$json['grand_ttl'] = (!empty($grandTotal)) ? number_format($grandTotal,2,',','.') : 0;
 			$json['nama_kasir']	= (!empty($data_order->KasirName)) ? $data_order->KasirName : "<small><i>POS-03</i></small>";
 			$json['tanggal'] = (!empty($data_order->Posting_Date)) ? date('d F Y', strtotime($data_order->Posting_Date)) : "<small><i>Tidak ada</i></small>";
@@ -280,7 +286,9 @@ class Pengembalian extends MY_Controller
 			
 			$data_master['no_nota'] = $no_nota;
 			$data_master['CustomerNo'] = $CustomerNo;
-			
+			$data_master['CustomerName'] = $CustomerName;
+			$data_master['PaymentMethodeCode'] = $paymentMethodeCode;
+
 			for($i=0;$i<sizeof($kode_barang);$i++){
 			//if($jml_beli[$i] > 0){
 				$dataSet[$i] = array (
@@ -290,7 +298,9 @@ class Pengembalian extends MY_Controller
 					'Discount'	=> $_disc[$i],
 					'Point'		=> $point[$i],
 					'Barcode'	=> $barcode[$i],
-                    'Nama' => $nama_barang[$i]
+                    'Nama' => $nama_barang[$i],
+                    'Location_Code' => $locationCode[$i],
+                    'Unit_of_Measure' => $Unit_of_Measure[$i]
 				);
 			//}
 			}
@@ -304,22 +314,9 @@ class Pengembalian extends MY_Controller
 	public function simpan_return(){
 
         $filter = '$filter';
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/NoSeriesLines?$filter=Series_Code eq 'S-CR'";
-        $data_api = $this->send_api->get_data($url);
-        $resp = json_decode($data_api)->value;
-        $lastCode = $resp[count($resp) - 1]->Last_No_Used;
-        $first = false;
-        if ($lastCode == "") {
-            $lastCode = $resp[count($resp) - 1]->Starting_No;
-            $first = true;
-        }
-
-        if (!$first) {
-            $splitCode = explode("-", $lastCode);
-            $countCode = sprintf("%05d", $splitCode[2] + 1);
-            $splitCode[2] = $countCode;
-            $lastCode = join("-", $splitCode);
-        }
+        $url = URL_API."/POS_Integration_GetLastNoUsedSeries?Company=MKS%20DEMO";
+        $data_api = $this->send_api->send_data($url, ["documentType" => "crmemo", "locationFilter" => $this->session->userdata("storeId")]);
+        $lastCode = json_decode($data_api)->value;
 		
         $data_master = $this->session->userdata('data_master');
 
@@ -327,14 +324,16 @@ class Pengembalian extends MY_Controller
             "no" => $lastCode,
             "DocumentType"=> "Credit Memo",
             "PostingDate"=> date("Y-m-d"),
-            "sellToCustomerNo"=> "001",
-            "sellToCustomerName"=> "Cibubur POS",
+            "sellToCustomerNo"=> $data_master["CustomerNo"],
+            "sellToCustomerName"=> $data_master["CustomerName"],
             "shipmentDate"=> date("Y-m-d"),
             "ExternalDocNo"=> $data_master["no_nota"],
-            "PaymentMethod"=> 'CASH',
+            "PaymentMethod"=> $data_master["PaymentMethodeCode"],
             "POSTransTime" => date('h:m:i'),
 			"Appliestodoctype" => "Invoice",
-			"Appliestodocno" => $data_master["no_nota"]
+			"Appliestodocno" => $data_master["no_nota"],
+            "PostingNo" => $lastCode,
+            "LocationCode"=> $this->session->userdata("storeId"),
         ];
         $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders";
         $data_api = $this->send_api->send_data($url, $bodySalesInvoiceHeader);
@@ -349,8 +348,8 @@ class Pengembalian extends MY_Controller
                 "type"=> "Item",
                 "no"=> $sales['ItemCode'],
                 "description"=> $sales["Nama"],
-                "unitOfMeasure"=> "Bottle",
-                "LocationCode"=> "MKS03",
+                "unitOfMeasure"=> $sales["Unit_of_Measure"],
+                "LocationCode"=> $sales["Location_Code"],
                 "quantity"=> (int)$sales['Qty'],
                 "unitPrice"=> (int)$sales['UnitPrice'],
                 "DiscountAmount" => (int)$sales['Discount']

@@ -126,8 +126,12 @@ class Penjualan extends MY_Controller
 			$level = $this->session->userdata('ap_level');
 			$dt = array();
 			$code 	= !empty($this->input->post('Code')) ? $this->input->post('Code') : '*';
+            $search	= !empty($this->input->post('Search')) ? strtoupper(trim($this->input->post('Search'))) : '';
 			$filter = '$filter';
 			$url = URL_API.'/Company(\'be489792-ee2f-ed11-97e8-000d3aa1ef31\')/POS_Item?$filter=Gen_Product_Posting_Group eq ' . sprintf("'%s'", $code) . " and Location_Filter eq '" . $this->session->userdata('storeId') . "'" ;
+            if ($search !== $code) {
+                $url = $url . " and contains(Description,'$search') and Gen_Product_Posting_Group ne ''";
+            }
 			
 			$data_api = $this->send_api->get_data($url);
 				
@@ -200,26 +204,27 @@ class Penjualan extends MY_Controller
 	
 	public function simpan_transaksi(){
         $filter = '$filter';
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/NoSeriesLines?$filter=Series_Code eq 'S-INV'";
-        $data_api = $this->send_api->get_data($url);
-        $resp = json_decode($data_api)->value;
-        $lastCode = $resp[count($resp) - 1]->Last_No_Used;
+        $url = URL_API."/POS_Integration_GetLastNoUsedSeries?Company=MKS%20DEMO";
+        $data_api = $this->send_api->send_data($url, ["documentType" => "invoice", "locationFilter" => $this->session->userdata("storeId")]);
+        $lastCode = json_decode($data_api)->value;
 
-        $splitCode = explode("-", $lastCode);
-        $countCode = sprintf("%05d", $splitCode[2] + 1);
-        $splitCode[2] = $countCode;
-        $lastCode = join("-", $splitCode);
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PaymentMethod?$filter=Default_POS_Pay_Method eq true";
+        $data_api = $this->send_api->get_data($url);
+        $paymentMethode = json_decode($data_api)->value;
+        $paymentMethode = $paymentMethode[count($paymentMethode) - 1]->Code;
 
         $bodySalesInvoiceHeader = [
             "no" => $lastCode,
              "DocumentType"=> "Invoice",
             "PostingDate"=> date("Y-m-d"),
-            "sellToCustomerNo"=> "001",
-            "sellToCustomerName"=> "Cibubur POS",
+            "sellToCustomerNo"=> $this->session->userdata("storeId"),
+            "sellToCustomerName"=> $this->session->userdata("ap_store_name"),
             "shipmentDate"=> date("Y-m-d"),
             "ExternalDocNo"=> $lastCode,
-            "PaymentMethod"=> 'CASH',
+            "PaymentMethod"=> $paymentMethode,
             "POSTransTime" => date('h:m:i'),
+            "PostingNo" => $lastCode,
+            "LocationCode"=> $this->session->userdata("storeId"),
         ];
         $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders";
         $data_api = $this->send_api->send_data($url, $bodySalesInvoiceHeader);
@@ -235,7 +240,7 @@ class Penjualan extends MY_Controller
                 "no"=> $sales['ItemCode'],
                 "description"=> $sales["Nama"],
                 "unitOfMeasure"=> "Bottle",
-                "LocationCode"=> "MKS03",
+                "LocationCode"=> $this->session->userdata("storeId"),
                 "quantity"=> (int)$sales['Qty'],
                 "unitPrice"=> (int)$sales['UnitPrice'],
                 "DiscountAmount" => (int)$sales['Discount']

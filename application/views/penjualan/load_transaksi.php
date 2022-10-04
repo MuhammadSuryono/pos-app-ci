@@ -20,7 +20,7 @@
 			$a = explode('!', $it->Description);
 			$b = "";
 			if ($it->Inventory == 0){ 
-				$b = '<p style="margin: 0 0 -3px; color:#000">Not Available</p>';
+				$b = '<p style="margin: 0 0 -3px; color:#000">Stock Kosong</p>';
 			}
 			echo '<div class="col-sm-12 list-product itm_prd" id="'.$id.'">
                   	<div class="thumbnail get_product '.$vatsts.'">       			
