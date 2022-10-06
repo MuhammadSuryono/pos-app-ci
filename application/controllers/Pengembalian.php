@@ -33,7 +33,8 @@ class Pengembalian extends MY_Controller
 		);
         $filter = '$filter';
         $location = $this->session->userdata('storeId');
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PostedSalesInvoice?$filter=LocationCode eq '$location'";
+        $dateNow = date("Y-m-d");
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders?$filter=LocationCode eq '$location' and DocumentType eq 'Invoice' and PostingDate ge $dateNow";
 		$data_api = $this->send_api->get_data($url, $post_data);
 						
 		$dt['nota'] = json_decode($data_api)->value;
@@ -226,7 +227,7 @@ class Pengembalian extends MY_Controller
 			'OrderNo'		=> $no_nota
 		);
         $filter = '$filter';
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PostedSalesInvoice?$filter=No eq '$no_nota'";
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders?$filter=no eq '$no_nota'";
         $data_api = $this->send_api->get_data($url, $post_data);
 		$this->session->set_userdata('SalesOrderLine', '');
 		$detail = json_decode($data_api);
@@ -238,7 +239,7 @@ class Pengembalian extends MY_Controller
         $detailPayment = json_decode($data_api);
         $dataPayment = $detailPayment->value[0];
 
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PostedSalesInvoiceLine?$filter=Document_No eq '$no_nota'";
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines?$filter=DocumentNo eq '$no_nota'";
         $data_api = $this->send_api->get_data($url, $post_data);
         $lines = json_decode($data_api);
 		$detail_order = $lines->value;
@@ -248,32 +249,32 @@ class Pengembalian extends MY_Controller
             $grandTotal = 0;
 			if($banyak_baris > 0){
 				foreach($detail_order as $db){
-					$kode_barang[] = $db->No;
-					$nama_barang[] = $db->Description;
-					$jml_beli[] = $db->Quantity;
-					$_disc[] = $db->Line_Discount_Percent;
-					$hrg_satuan[] =  number_format($db->Unit_Price,2,',','.');
-					$total[] =  number_format($db->Unit_Price * $db->Quantity,2,',','.');
-					$dt_total[] = $db->No.'_'.$db->Quantity.'_'.$db->Unit_Price.'_'.$db->Line_Amount * $db->Quantity;
-					$hrg_satuans[] =  $db->Unit_Price;
+					$kode_barang[] = $db->no;
+					$nama_barang[] = $db->description;
+					$jml_beli[] = $db->quantity;
+					$_disc[] = $db->DiscountAmount;
+					$hrg_satuan[] =  number_format($db->unitPrice,2,',','.');
+					$total[] =  number_format($db->unitPrice * $db->quantity,2,',','.');
+					$dt_total[] = $db->No.'_'.$db->quantity.'_'.$db->unitPrice.'_'.$db->unitPrice * $db->quantity;
+					$hrg_satuans[] =  $db->unitPrice;
 					$point[] =  $db->Point;
-					$barcode[] = $db->No;
-                    $subTotal[] = $db->Unit_Price * $db->Quantity;
-                    $grandTotal +=  $db->Unit_Price * $db->Quantity;
+					$barcode[] = $db->no;
+                    $subTotal[] = $db->unitPrice * $db->quantity;
+                    $grandTotal +=  $db->unitPrice * $db->quantity;
                     $locationCode[] =  $db->Location_Code;
                     $Unit_of_Measure[] =  $db->Unit_of_Measure;
 				}
 			}
-			$json['grand_bayar'] = (!empty($data_order->Amount)) ? number_format($data_order->Amount,2,',','.') : 0;
+			$json['grand_bayar'] = (!empty($dataPayment->NominalPayment)) ? number_format($dataPayment->NominalPayment,2,',','.') : 0;
 			$json['ppn'] = 0;
-			$CustomerNo = $data_order->Sell_to_Customer_No;
-            $CustomerName = $data_order->Sell_to_Customer_Name;
+			$CustomerNo = $data_order->sellToCustomerNo;
+            $CustomerName = $data_order->sellToCustomerName;
             $paymentMethodeCode = $data_order->PaymentMethodCode;
-			$json['id_pelanggan'] = $data_order->Sell_to_Customer_No;
+			$json['id_pelanggan'] = $data_order->sellToCustomerNo;
 			$json['grand_ttl'] = (!empty($grandTotal)) ? number_format($grandTotal,2,',','.') : 0;
 			$json['nama_kasir']	= (!empty($data_order->KasirName)) ? $data_order->KasirName : "<small><i>POS-03</i></small>";
-			$json['tanggal'] = (!empty($data_order->Posting_Date)) ? date('d F Y', strtotime($data_order->Posting_Date)) : "<small><i>Tidak ada</i></small>";
-			$json['nama'] = (!empty($data_order->Bill_to_Name)) ? $data_order->Bill_to_Name : "<small><i>Tidak ada</i></small>";
+			$json['tanggal'] = (!empty($data_order->PostingDate)) ? date('d F Y', strtotime($data_order->PostingDate)) : "<small><i>Tidak ada</i></small>";
+			$json['nama'] = (!empty($data_order->sellToCustomerName)) ? $data_order->sellToCustomerName : "<small><i>Tidak ada</i></small>";
 			$json['telp'] = (!empty($data_order->PhoneNo)) ? $data_order->PhoneNo : "<small><i>Tidak ada</i></small>";
 			$json['nama_brg'] = $nama_barang;
 			$json['jml_beli'] = $jml_beli;

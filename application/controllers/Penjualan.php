@@ -122,12 +122,12 @@ class Penjualan extends MY_Controller
 	}
 
 	function load_transaksi(){
+        $filter = '$filter';
 		if ($this->input->post('Code') != "PROMO" && $this->input->post('Code') != "PROMO LUXO" && $this->input->post('Code') != "PROMO LUXOFOOD" && $this->input->post('Code') != "PROMO - LUXO" && $this->input->post('Code') != "PROMO - LUXOFOOD") {
 			$level = $this->session->userdata('ap_level');
 			$dt = array();
 			$code 	= !empty($this->input->post('Code')) ? $this->input->post('Code') : '*';
             $search	= !empty($this->input->post('Search')) ? strtoupper(trim($this->input->post('Search'))) : '';
-			$filter = '$filter';
 			$url = URL_API.'/Company(\'be489792-ee2f-ed11-97e8-000d3aa1ef31\')/POS_Item?$filter=Gen_Product_Posting_Group eq ' . sprintf("'%s'", $code) . " and Location_Filter eq '" . $this->session->userdata('storeId') . "'" ;
             if ($search !== $code) {
                 $url = $url . " and contains(Description,'$search') and Gen_Product_Posting_Group ne ''";
@@ -148,7 +148,9 @@ class Penjualan extends MY_Controller
 				'Code'		=> '',				
 				'LocationCode'	=> $this->session->userdata('storeId')
 			);
-			$url = URL_API."/Company('MKS%20DEMO')/POS_Promotions";
+
+            $dateNow = date('Y-m-d');
+			$url = URL_API."/Company('MKS%20DEMO')/POS_Promotions?$filter=Ending_Date ge $dateNow and Location_Code eq 'MKS03'";
 			$data_api = $this->send_api->get_data($url);
 				
 			$dt['itemku']->DiscountAdhoc = json_decode($data_api)->value;	
@@ -360,11 +362,11 @@ class Penjualan extends MY_Controller
         $numberInvoice = $this->session->userdata('invoiceNo');
 
         $filter = '$filter';
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PostedSalesInvoice?$filter=No eq '$numberInvoice'";
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders?$filter=no eq '$numberInvoice'";
         $data_api = $this->send_api->get_data($url, []);
         $dataHeader = json_decode($data_api);
 
-        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PostedSalesInvoiceLine?$filter=Document_No eq '$numberInvoice'";
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines?$filter=DocumentNo eq '$numberInvoice'";
         $data_api = $this->send_api->get_data($url, []);
         $dataLines = json_decode($data_api);
 

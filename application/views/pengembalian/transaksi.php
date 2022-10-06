@@ -46,7 +46,7 @@ if($available < 1){
 										
 											if(!empty($nota)){
 												foreach($nota as $n){
-													 echo '<option value='.$n->No.'>'.$n->No.'</option>';
+													 echo '<option value='.$n->no.'>'.$n->no.'</option>';
 												}
 											}
 										?>										

@@ -26,11 +26,12 @@ $sales_payment =  $print_dt->SalesPayment;
 
 </table> 
 <br /> -->
+
 <table>
 	<tr>
         <td>Nota</td>
         <td style="padding-left:5px;">: </td>
-        <td style="padding-left:5px;"> <?php echo $header->No;?></td>
+        <td style="padding-left:5px;"> <?php echo $header->no;?></td>
 	</tr>
     <tr>
         <td>Tanggal</td>
@@ -45,7 +46,7 @@ $sales_payment =  $print_dt->SalesPayment;
 	<tr>
         <td>Pelanggan</td>
         <td style="padding-left:5px;">: </td>
-        <td style="padding-left:5px;"> <?php echo $header->Sell_to_Customer_Name;?></td>
+        <td style="padding-left:5px;"> <?php echo $header->sellToCustomerName;?></td>
 	</tr>
     
     
@@ -63,6 +64,7 @@ $sales_payment =  $print_dt->SalesPayment;
 <td align="center" style="width:5%;">Potongan</td>
 <td align="center	" style="width:15%;">Subtotal</td>
 </tr>
+
 <?php
 	$no = 1;
 	$qty = 0;
@@ -81,42 +83,42 @@ $sales_payment =  $print_dt->SalesPayment;
 	foreach($lines as $kd){
 		if ($kd->VATProdPostingGroup == 'NOVAT'){
 			//$discount_vat = $kd->UnitPrice * ($kd->Discount / 100);
-			$discount_vat = $kd->Line_Discount_Amount;
-			$sb_vat = $kd->Quantity * $kd->Unit_Price;
+			$discount_vat = $kd->DiscountAmount;
+			$sb_vat = $kd->quantity * $kd->unitPrice;
 			$sb_ttl_vat = $sb_ttl_vat + $sb_vat; 
 			//$sb_vat += $sb_vat;
 			$potongan = $potongan + $discount_vat;
 			//$potongan = $potongan + ($discount_vat * $kd->Qty);
-            $name = $kd->Description;
+            $name = $kd->description;
 			echo '<tr>';
-            echo '<td>'.$kd->No.'</td>';
-            echo '<td>'.$kd->Description.'</td>';
-            echo '<td align="right">'.str_replace(',', '.', number_format($kd->Unit_Price)).'</td>';
-			echo '<td align="center">'.$kd->Quantity.'</td>';
-            echo '<td align="right">'.str_replace(',', '.', number_format($kd->Line_Discount_Amount)).'</td>';
-            echo '<td align="right">'.str_replace(',', '.', number_format($kd->Line_Amount)).'</td>';
+            echo '<td>'.$kd->no.'</td>';
+            echo '<td>'.$kd->description.'</td>';
+            echo '<td align="right">'.str_replace(',', '.', number_format($kd->unitPrice)).'</td>';
+            echo '<td align="center">'.$kd->quantity.'</td>';
+            echo '<td align="right">'.str_replace(',', '.', number_format($kd->DiscountAmount)).'</td>';
+            echo '<td align="right">'.str_replace(',', '.', number_format(($kd->unitPrice * $kd->quantity) - $kd->DiscountAmount )).'</td>';
 			echo '</tr>';
 
-            $stringdetail = $stringdetail . '@' . $kd->Description . '#' . $kd->Quantity . '#' . str_replace(',', '.',number_format($kd->Unit_Price)) . '#' . str_replace(',', '.',number_format($kd->Line_Amount));
+            $stringdetail = $stringdetail . '@' . $kd->description . '#' . $kd->quantity . '#' . str_replace(',', '.',number_format($kd->unitPrice)) . '#' . str_replace(',', '.',number_format($kd->DiscountAmount));
 		} else{
-			$discount = $kd->Line_Discount_Amount;
+			$discount = $kd->DiscountAmount;
 			//$discount = $kd->UnitPrice * ($kd->Discount / 100);
-			$qty = $kd->Quantity;
-			$sb  = $qty * $kd->Unit_Price;
-			$name = $kd->Description;
+			$qty = $kd->quantity;
+			$sb  = $qty * $kd->unitPrice;
+			$name = $kd->description;
 			//$ttl_disc_pjk = $ttl_disc_pjk + ($discount * $kd->Qty);
 			$sb_ttl = $sb_ttl + $sb;
 			$potongan = $potongan + $discount;
 			//$potongan = $potongan + ($discount * $kd->Qty);
  			echo '<tr>';
-			echo '<td>'.$kd->No.'(P)</td>';
-			echo '<td>'.$kd->Description.'</td>';
-			echo '<td align="right">'.str_replace(',', '.', number_format($kd->Unit_Price)).'</td>';
-			echo '<td align="center">'.$kd->Quantity.'</td>';
-			echo '<td align="right">'.str_replace(',', '.', number_format($kd->Line_Discount_Amount)).'</td>';
-			echo '<td align="right">'.str_replace(',', '.', number_format($kd->Line_Amount)).'</td>';
-			echo '</tr>';
-			$stringdetail = $stringdetail . '@' . $kd->Description . '#' . $kd->Quantity . '#' . str_replace(',', '.',number_format($kd->Unit_Price)) . '#' . str_replace(',', '.',number_format($kd->Line_Amount));
+            echo '<td>'.$kd->no.'</td>';
+            echo '<td>'.$kd->description.'</td>';
+            echo '<td align="right">'.str_replace(',', '.', number_format($kd->unitPrice)).'</td>';
+            echo '<td align="center">'.$kd->quantity.'</td>';
+            echo '<td align="right">'.str_replace(',', '.', number_format($kd->DiscountAmount)).'</td>';
+            echo '<td align="right">'.str_replace(',', '.', number_format(($kd->unitPrice * $kd->quantity) -$kd->DiscountAmount )).'</td>';
+            echo '</tr>';
+			$stringdetail = $stringdetail . '@' . $kd->description . '#' . $kd->quantity . '#' . str_replace(',', '.',number_format($kd->unitPrice)) . '#' . str_replace(',', '.',number_format($kd->DiscountAmount));
 		}	
 		$no++;
 	}
