@@ -208,25 +208,31 @@ class Penjualan extends MY_Controller
         $totalBayar = 0;
         for ($i = 0; $i < count($this->input->post('nilai_bayar')); $i++) {
             if ($this->input->post('type_bayar')[$i] == '- Pilih jenis bayar -') {
-                $this->query_error("Gagal submit pembayaran, payment tidak boleh kosong!");
+                $this->query_error("Gagal submit pembayaran, Type Payment harus di isi!");
                 exit();
             }
 
             if ($this->input->post('type_bayar')[$i] == '') {
-                $this->query_error("Gagal submit pembayaran, payment tidak boleh kosong!");
+                $this->query_error("Gagal submit pembayaran, Type Payment harus di isi!");
                 exit();
             }
 
             if ($this->input->post('type_bayar')[$i] != 'CASH' && $this->input->post('type_pay')[$i] == '- Pilih type bayar -') {
-                $this->query_error("Gagal submit pembayaran, payment tidak boleh kosong!");
+                $this->query_error("Gagal submit pembayaran, Type Payment harus di isi!");
                 exit();
             }
+			
+			$nilaiBayar = (int)join("", explode(".", $this->input->post('nilai_bayar')[$i]));
+			if ($nilaiBayar == 0) {
+				$this->query_error("Gagal submit pembayaran, Amount tidak boleh kosong, silahkan check payment!");
+                exit();
+			}
 
-            $totalBayar += (int)join("", explode(".", $this->input->post('nilai_bayar')[$i]));
+            $totalBayar += $nilaiBayar;
         }
         $grandTotal = $this->session->userdata('grandTotal');
         if ($totalBayar < (int)$grandTotal) {
-            $this->query_error("Gagal submit pembayaran, total pembayaran anda tidak cukup!");
+            $this->query_error("Gagal submit pembayaran, Pembayaran kurang dari nilai transaksi!");
             exit();
         }
 
