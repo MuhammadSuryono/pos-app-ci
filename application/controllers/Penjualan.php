@@ -222,10 +222,10 @@ class Penjualan extends MY_Controller
                 exit();
             }
 
-            $totalBayar += $this->input->post('nilai_bayar')[$i];
+            $totalBayar += (int)join("", explode(".", $this->input->post('nilai_bayar')[$i]));
         }
         $grandTotal = $this->session->userdata('grandTotal');
-        if ($totalBayar < $grandTotal) {
+        if ($totalBayar < (int)$grandTotal) {
             $this->query_error("Gagal submit pembayaran, total pembayaran anda tidak cukup!");
             exit();
         }
@@ -282,7 +282,7 @@ class Penjualan extends MY_Controller
         for ($i = 0; $i < count($this->input->post('nilai_bayar')); $i++) {
             $bodySalesInvoicePayment = [
                 "SalesOrderNo"=> $lastCode,
-                "PaymentMethodCode"=> $this->input->post('type_pay')[$i],
+                "PaymentMethodCode"=> $this->input->post('type_bayar')[$i] == 'CASH' && $this->input->post('type_pay')[$i] == '- Pilih type bayar -' ? "" : $this->input->post('type_pay')[$i],
                 "NominalPayment"=> (int)join("", explode(".", $this->input->post('nilai_bayar')[$i])),
                 "PaymentType"=> $this->input->post('type_bayar')[$i] ?? 'CASH',
                 "QtyPoint"=> 0,

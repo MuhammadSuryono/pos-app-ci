@@ -71,7 +71,7 @@ class Pembayaran extends MY_Controller
 		$CountLine =  count($dataSet);
 		$dt=array();
 		$this->session->set_userdata('SalesOrderLine', $dataSet);
-		$this->session->set_userdata('grandTotal', $grnd_ttl);
+		$this->session->set_userdata('grandTotal', explode(".", $grnd_ttl)[0]);
 		$cart = $this->session->userdata('SalesOrderLine');
 		$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Customer";
 		$data_api = $this->send_api->get_data($url);
