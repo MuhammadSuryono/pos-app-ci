@@ -203,7 +203,18 @@ if($level !== 'admin')
 		</div>
 	</div>
 </div>
-
+    <div class="modal" id="ModalError" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><i class="fa fa-times-circle"></i></button>
+                    <h4 class="modal-title" id="ModalHeaderError"></h4>
+                </div>
+                <div class="modal-body" id="ModalContentError"></div>
+                <div class="modal-footer" id="ModalFooterError"></div>
+            </div>
+        </div>
+    </div>
 <p class='footer'><?php echo config_item('web_footer'); ?></p>
 
 <link rel="stylesheet" type="text/css" href="<?php echo config_item('plugin'); ?>datetimepicker/jquery.datetimepicker.css"/>
@@ -911,13 +922,14 @@ function SimpanTransaksi(){
 			}
 			else 
 			{
-				$('.modal-dialog').removeClass('modal-lg');
-				$('.modal-dialog').addClass('modal-sm');
-				$('#ModalHeader').html('Error!');
-				$('#ModalContent').html("Gagal menyimpan penjualan");
-				$('#ModalContent').html('Error');
-				$('#ModalFooter').html("<button type='button' class='btn btn-primary' data-dismiss='modal' autofocus>Ok</button>");
-				$('#ModalGue').modal('show');
+                $('#ModalError').modal('show');
+				// $('.modal-dialog').removeClass('modal-lg');
+				// $('.modal-dialog').addClass('modal-sm');
+				$('#ModalHeaderError').html('Error!');
+                $('#ModalContentError').html('');
+				$('#ModalContentError').html(data.pesan);
+				$('#ModalFooterError').html("<button type='button' class='btn btn-primary' data-dismiss='modal' autofocus>Ok</button>");
+
 			}	
 		}
 	});

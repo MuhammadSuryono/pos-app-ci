@@ -34,8 +34,12 @@ class Secure extends MY_Controller
 			);
 			$data_api = $this->send_api->send_data($url, $post_data);
 			$dt = json_decode($data_api);
+            if (isset($dt->error)) {
+                $this->query_error("Login Gagal, Cek Kombinasi Username & Password !");
+                return;
+            }
 			$status = $dt->value;
-			if($status != "Failed"){
+			if($status != "Failed" && isset($status)){
                 $explodeStatus = explode(";",$status);
 //				$user = $dt->User;
                 $status = $explodeStatus[1];

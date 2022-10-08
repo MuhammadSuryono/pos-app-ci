@@ -150,7 +150,7 @@ class Penjualan extends MY_Controller
 			);
 
             $dateNow = date('Y-m-d');
-			$url = URL_API."/Company('MKS%20DEMO')/POS_Promotions?$filter=Ending_Date ge $dateNow and Location_Code eq 'MKS03'";
+			$url = URL_API."/Company('MKS%20DEMO')/POS_Promotions?$filter=Ending_Date ge $dateNow and Location_Code eq '".$this->session->userdata('storeId')."'";
 			$data_api = $this->send_api->get_data($url);
 				
 			$dt['itemku']->DiscountAdhoc = json_decode($data_api)->value;	
@@ -205,6 +205,31 @@ class Penjualan extends MY_Controller
 	}
 	
 	public function simpan_transaksi(){
+        $totalBayar = 0;
+        for ($i = 0; $i < count($this->input->post('nilai_bayar')); $i++) {
+            if ($this->input->post('type_bayar')[$i] == '- Pilih jenis bayar -') {
+                $this->query_error("Gagal submit pembayaran, payment tidak boleh kosong!");
+                exit();
+            }
+
+            if ($this->input->post('type_bayar')[$i] == '') {
+                $this->query_error("Gagal submit pembayaran, payment tidak boleh kosong!");
+                exit();
+            }
+
+            if ($this->input->post('type_bayar')[$i] != 'CASH' && $this->input->post('type_pay')[$i] == '- Pilih type bayar -') {
+                $this->query_error("Gagal submit pembayaran, payment tidak boleh kosong!");
+                exit();
+            }
+
+            $totalBayar += $this->input->post('nilai_bayar')[$i];
+        }
+        $grandTotal = $this->session->userdata('grandTotal');
+        if ($totalBayar < $grandTotal) {
+            $this->query_error("Gagal submit pembayaran, total pembayaran anda tidak cukup!");
+            exit();
+        }
+
         $filter = '$filter';
         $url = URL_API."/POS_Integration_GetLastNoUsedSeries?Company=MKS%20DEMO";
         $data_api = $this->send_api->send_data($url, ["documentType" => "invoice", "locationFilter" => $this->session->userdata("storeId")]);
@@ -230,6 +255,7 @@ class Penjualan extends MY_Controller
         ];
         $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders";
         $data_api = $this->send_api->send_data($url, $bodySalesInvoiceHeader);
+        $this->session->set_userdata('submit_penjualan', "header");
 
         $salesOrder = $this->session->userdata('SalesOrderLine');
         $bodyInvoiceLine = array();
@@ -251,6 +277,7 @@ class Penjualan extends MY_Controller
 			$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines";
 			$data_api = $this->send_api->send_data($url, $dataSales);
         }
+        $this->session->set_userdata('submit_penjualan', "lines");
 
         for ($i = 0; $i < count($this->input->post('nilai_bayar')); $i++) {
             $bodySalesInvoicePayment = [
