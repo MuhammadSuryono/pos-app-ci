@@ -21,9 +21,7 @@ class Barang extends MY_Controller
 			'StoreID'	=> $this->session->userdata('storeId')
 		);
 		$filter = '$filter';
-		$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Item?$filter=Location_Filter eq '" . $this->session->userdata('storeId') . "' and Gen_Product_Posting_Group ne ''" ;
-			
-			
+		$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Item?$filter=Location_Filter eq '" . $this->session->userdata('storeId') . "' and Gen_Product_Posting_Group ne '' and Consignment_Location_Filter eq '".$this->session->userdata('consignment_location')."'" ;
 		$data_api = $this->send_api->get_data($url);
 		// echo "<pre>";print_r($url);echo "</pre>";
 		// echo "<pre>";print_r($post_data);echo "</pre>";

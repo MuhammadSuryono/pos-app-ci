@@ -136,7 +136,8 @@ class Penjualan extends MY_Controller
 			$data_api = $this->send_api->get_data($url);
 				
 			$dt['itemku'] = json_decode($data_api)->value;		
-			//$dt['post_data'] = $post_data;		
+			//$dt['post_data'] = $post_data;
+            $this->session->set_userdata("promotion", "false");
 		}
 		else{
 			
@@ -186,6 +187,7 @@ class Penjualan extends MY_Controller
 					}
 				}	
 			}
+            $this->session->set_userdata("promotion", "true");
 		}
 		
 		$this->load->view('penjualan/load_transaksi', $dt);
@@ -277,7 +279,8 @@ class Penjualan extends MY_Controller
                 "LocationCode"=> $this->session->userdata("storeId"),
                 "quantity"=> (int)$sales['Qty'],
                 "unitPrice"=> (int)$sales['UnitPrice'],
-                "DiscountAmount" => (int)$sales['Discount']
+                "DiscountAmount" => (int)$sales['Discount'],
+                "ItemTransactionPromo" => (int)$sales['Discount'] > 0
             ];
 			$bodyInvoiceLine[] = $dataSales;
 			$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines";

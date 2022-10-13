@@ -73,6 +73,7 @@ class Secure extends MY_Controller
 					'ap_level_caption' => $applevel,
                     'customer_no' => $explodeStatus[0],
 					'ap_store_name' => $explodeStatus[2],
+                    'consignment_location' => $explodeStatus[4]
 //					'ap_store_address' => $user->Address,
 //					'ap_store_postcode' => $user->PostCode,
 //					'ap_store_HP' => $user->HP,

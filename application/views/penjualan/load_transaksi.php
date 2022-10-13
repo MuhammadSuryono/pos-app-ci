@@ -132,11 +132,12 @@ function list_cart_promo(myID, harga, qty_promo, discount, vatstat, nama){
 		baris +='<input type="hidden" name="cod_item[]" value="'+myID+'">';
 		baris +='<input type="hidden" name="barcode[]" value="">';
 		baris +='<input type="hidden" name="point[]" value="">';
+		baris +='<input type="hidden" name="promoId[]" value="">';
 		baris +='<input type="hidden" id="vatstat_'+myID+'" name="vatstat[]" value="'+vatstat+'">';
 		baris +='<input type="hidden" id="hrg_'+myID+'" value="'+harga_ori+'" name="harga_ori[]" />';        
         baris +='<input type="hidden" class="_disc" name="_disc[]" id="disc_'+myID+'" value="'+discount+'" style="width:40%; text-align:center;" placeholder="Disc." disabled /></span>';
 		baris +='<input type="hidden" class="pull-left" onkeyup="promo(\'' +myID+ '\')"  value="'+discount+'" id="disc_ttl_'+myID+'" name="disc_ttl[]" ids="'+vatstat+'" placeholder="Disc." style="margin-top:-5px;width:25%;text-align:right"/>';
-		baris +='<input type="text" class="pull-left" disabled value="'+discount_coma+'" id="disc_ttl_dis'+myID+'" placeholder="Disc." style="margin-top:-5px;width:25%;text-align:right"/>';
+		baris +='<input type="hidden" class="pull-left" disabled value="'+discount_coma+'" id="disc_ttl_dis'+myID+'" placeholder="Disc." style="margin-top:-5px;width:25%;text-align:right"/>';
 		baris +='<input type="hidden" name="hrga[]" id="ttl_hrg_'+myID+'" value="" ids="'+vatstat+'" />';
 		baris +='</div></li>';
 	

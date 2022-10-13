@@ -54,12 +54,12 @@ $available = $this->session->userdata('available');
 				<?php }
 				if($level == 'KASIR') { ?>
 					<li class="dropdown <?php if($controller == 'laporan') { echo 'active'; } ?>">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class='fa fa-file-text-o fa-fw'></i> Laporan <span class="caret"></span></a>
-						<ul class="dropdown-menu">
-							<li><a href="<?php echo site_url('laporan'); ?>">Laporan Penjualan</a></li>
-							<?php if($available == 1 ){ ?>
-							<li><a href="<?php echo site_url('laporan/open_close'); ?>">Laporan Open-Close</a></li>
-							<?php } ?>
+<!--						<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class='fa fa-file-text-o fa-fw'></i> Laporan <span class="caret"></span></a>-->
+<!--						<ul class="dropdown-menu">-->
+<!--							<li><a href="--><?php //echo site_url('laporan'); ?><!--">Laporan Penjualan</a></li>-->
+<!--							--><?php //if($available == 1 ){ ?>
+<!--							<li><a href="--><?php //echo site_url('laporan/open_close'); ?><!--">Laporan Open-Close</a></li>-->
+<!--							--><?php //} ?>
 						</ul>
 					</li>   
 				<?php }

@@ -331,8 +331,8 @@ class Pengembalian extends MY_Controller
             "ExternalDocNo"=> $data_master["no_nota"],
             "PaymentMethod"=> $data_master["PaymentMethodeCode"],
             "POSTransTime" => date('h:m:i'),
-			"Appliestodoctype" => "Invoice",
-			"Appliestodocno" => $data_master["no_nota"],
+			"Appliestodoctype" => "",
+			"Appliestodocno" => "",
             "PostingNo" => $lastCode,
             "LocationCode"=> $this->session->userdata("storeId"),
         ];

@@ -34,15 +34,15 @@
                     <tbody>
                     <?php 
 						if(!empty($itemku)){
-							
 							foreach($itemku as $it){
+                                $stock = ($it->Inventory + $it->Consignment_Qty) - ($it->Qty_on_Sales_Invoice + $it->Qty_on_Sales_Cr_Memo);
 								echo '<tr>';
 								echo '<td>'.$it->No.'</td>';
 								echo '<td>'.$it->Description.'</td>';
 								//echo '<td>'.$it->Category.'</td>';
 								//echo '<td>'.$it->Point.'</td>';
 								//echo '<td>'.$it->Brand.'</td>';
-								echo '<td>'.$it->Inventory.'</td>';
+								echo '<td>'.number_format($stock).'</td>';
 								//echo '<td align="right">'.number_format($it->Harga,2,',','.').'</td>';
 								//echo '<td>'.$it->Discount.'</td>';
 								echo '</tr>';
