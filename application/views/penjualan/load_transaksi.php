@@ -19,7 +19,8 @@
 			}
 			$a = explode('!', $it->Description);
 			$b = "";
-			if ($it->Inventory == 0){ 
+            $stock = ($it->Inventory + $it->Consignment_Qty) - ($it->Qty_on_Sales_Invoice + $it->Qty_on_Sales_Cr_Memo);
+			if ($stock == 0){
 				$b = '<p style="margin: 0 0 -3px; color:#000">Stock Kosong</p>';
 			}
 			echo '<div class="col-sm-12 list-product itm_prd" id="'.$id.'">
