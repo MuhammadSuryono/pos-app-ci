@@ -154,7 +154,7 @@ var countPrint = 0;
 	$('.btn_confirm').click(function(){
 		var no_order = $('#_no_order').val();
 		$.ajax({
-			url: "<?php echo site_url('penjualan/send_confirm'); ?>/"+no_order,
+			url: "<?php echo site_url('penjualan/send_confirm?noOrder='); ?>"+no_order,
 			type: "POST",
 			cache: false,
 			data: '',

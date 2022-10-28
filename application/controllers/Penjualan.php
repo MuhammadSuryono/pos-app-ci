@@ -85,12 +85,18 @@ class Penjualan extends MY_Controller
 		$dt['data'] = $this->session->userdata('detailEcom');
 		$dt['payment'] = json_decode($dataPayment);
 
+		
+		$this->session->set_userdata('lineEcom', json_decode($data_api)->value);
+		$this->session->set_userdata('paymentEcom', json_decode($dataPayment)->value);
+
 		// var_dump($dt);
 
 		$this->load->view('penjualan/confirm_detail', $dt);
 	}
 	
-	function send_confirm($id_penjualan){
+	function send_confirm(){
+		
+		$id_penjualan = $_GET['noOrder'];
 		// $post_data = array(
 		// 	'OrderNo'		=> $id_penjualan,
 		// 	'PosId'			=> $this->session->userdata('storeId'),
@@ -100,6 +106,80 @@ class Penjualan extends MY_Controller
 		// $data_api = $this->send_api->send_data($url, $post_data);
 		// $detail = json_decode($data_api);
 		// echo $detail->Status;
+
+		$detailEcom = $this->session->userdata('detailEcom')[0];
+		$lineEcom = $this->session->userdata('lineEcom');
+		$paymentEcom = $this->session->userdata('paymentEcom')[0];
+		$storeId = $this->session->userdata("storeId");
+
+		$filter = '$filter';
+        $url = URL_API."/POS_Integration_GetLastNoUsedSeries?Company=MKS%20DEMO";
+        $data_api = $this->send_api->send_data($url, ["documentType" => "invoice", "locationFilter" => $this->session->userdata("storeId")]);
+        $lastCode = json_decode($data_api)->value;
+
+		$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_PaymentMethod?$filter=Default_POS_Pay_Method eq true";
+        $data_api = $this->send_api->get_data($url);
+        $paymentMethode = json_decode($data_api)->value;
+        $paymentMethode = $paymentMethode[count($paymentMethode) - 1]->Code;
+
+        $bodySalesInvoiceHeader = [
+            "no" => $lastCode,
+             "DocumentType"=> "Invoice",
+            "PostingDate"=> date("Y-m-d"),
+            "sellToCustomerNo"=> $this->session->userdata("storeId"),
+            "sellToCustomerName"=> $this->session->userdata("ap_store_name"),
+            "shipmentDate"=> date("Y-m-d"),
+            "ExternalDocNo"=> $lastCode,
+            "PaymentMethod"=> $paymentMethode,
+            "POSTransTime" => date('h:m:i'),
+            "PostingNo" => $lastCode,
+            "LocationCode"=> $this->session->userdata("storeId"),
+        ];
+        $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders";
+        $data_api = $this->send_api->send_data($url, $bodySalesInvoiceHeader);
+        $this->session->set_userdata('submit_penjualan', "header");
+
+        $salesOrder = $this->session->userdata('SalesOrderLine');
+        $bodyInvoiceLine = array();
+        foreach ($lineEcom as $key => $sales) {
+            $dataSales = [
+                "DocumentType"=> "Invoice",
+                "DocumentNo"=> $lastCode,
+                "lineNo"=> 10000 + ($key * 10000) ,
+                "type"=> "Item",
+                "no"=> $sales->no,
+                "description"=> $sales->description,
+                "unitOfMeasure"=> $sales->unitOfMeasure,
+                "LocationCode"=> $this->session->userdata("storeId"),
+                "quantity"=> (int)$sales->quantity,
+                "unitPrice"=> (int)$sales->unitPrice,
+                "DiscountAmount" => (int)$sales->DiscountAmount,
+                "ItemTransactionPromo" => $sales->ItemTransactionPromo
+            ];
+			$bodyInvoiceLine[] = $dataSales;
+			$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines";
+			$data_api = $this->send_api->send_data($url, $dataSales);
+        }
+        $this->session->set_userdata('submit_penjualan', "lines");
+
+        $bodySalesInvoicePayment = [
+			"SalesOrderNo"=> $lastCode,
+			"PaymentMethodCode"=> $paymentEcom->PaymentMethodCode,
+			"NominalPayment"=> $paymentEcom->NominalPayment,
+			"PaymentType"=> $paymentEcom->PaymentType,
+			"QtyPoint"=> $paymentEcom->QtyPoint,
+			"NoNOTA"=> $paymentEcom->NoNOTA,
+			"DeliveryAmount"=> $paymentEcom->DeliveryAmount
+		];
+		$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Payment";
+		$data_api = $this->send_api->send_data($url, $bodySalesInvoicePayment);
+
+        $bodySubmit = ["invoiceNo" => $lastCode, "quoteNo" => $id_penjualan];
+
+        $url = URL_API."/POS_Integration_SalesQuotetoInvoice?Company=MKS%20DEMO";
+        $data_api = $this->send_api->send_data($url, $bodySubmit);
+
+
 		echo 1;
 	}
 	
