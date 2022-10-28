@@ -1,13 +1,15 @@
 <?php
-$data_order = $detail->SalesOrder;
+$data_order = $data[0];
+$paymet = $payment->value[0];
+
 if(!empty($data_order)){
 	echo "
-	    <input type='hidden' id='_no_order' value='".$data_order->OrderNo."'>
+	    <input type='hidden' id='_no_order' value='".$data_order->no."'>
 		<table class='info_pelanggan'>
 			<tr>
 				<td>Nama Pelanggan</td>
 				<td>:</td>
-				<td>".$data_order->CustomerName."</td>
+				<td>".$data_order->NamaPelanggan."</td>
 			</tr>
 			<tr>
 				<td>Alamat</td>
@@ -17,13 +19,13 @@ if(!empty($data_order)){
 			<tr>
 				<td>Telp. / HP</td>
 				<td>:</td>
-				<td>".$data_order->PhoneNo."</td>
+				<td>".$data_order->NoTelpPelanggan."</td>
 			</tr>
 			
 		</table>
 		<hr />
-		<input type='hidden' id='TglPrint' value='".date('d-m-Y H:i:s', strtotime($data_order->TransactionDate))."' />
-		<input type='hidden' id='NotaPrint' value='".$data_order->OrderNo."' />
+		<input type='hidden' id='TglPrint' value='".date('d-m-Y H:i:s', strtotime($data_order->shipmentDate))."' />
+		<input type='hidden' id='NotaPrint' value='".$paymet->SalesOrderNo."' />
 	";
 }
 
@@ -46,23 +48,22 @@ if(!empty($data_order)){
 	$totalbayar = 0;
 	$stringPayment = 0;
 	$stringdetail = 0;
-	foreach($data_order->SalesOrderLine as $d){
+	$disc = 0;
+	foreach($detail->value as $d){
 		echo "<tr>
 				<td>".$no."</td>
-				<td>".$d->ItemCode."</td>
-				<td>".$d->ItemName."</td>
-				<td align=''>".number_format($d->UnitPrice,2,',','.')."</td>
-				<td align=''>".$d->Qty."</td>
-				<td align=''>".number_format($d->SubTotal,2,',','.')."</td>
+				<td>".$d->no."</td>
+				<td>".$d->description."</td>
+				<td align=''>".number_format($d->unitPrice,2,',','.')."</td>
+				<td align=''>".$d->quantity."</td>
+				<td align=''>".number_format($d->unitPrice * $d->quantity,2,',','.')."</td>
 			</tr>";
 		$no++;
-		$totalbayar = $totalbayar + ($d->UnitPrice * $d->Qty);
-		$stringdetail = $stringdetail . '@' . $d->ItemName . '#' . $d->Qty . '#' . str_replace(',', '.',number_format($d->UnitPrice)) . '#' . str_replace(',', '.',number_format($d->SubTotal));
+		$disc += $d->DiscountAmount;
+		$totalbayar = $totalbayar + ($d->unitPrice * $d->quantity);
+		$stringdetail = $stringdetail . '@' . $d->description . '#' . $d->quantity . '#' . str_replace(',', '.',number_format($d->unitPrice)) . '#' . str_replace(',', '.',number_format($d->unitPrice * $d->quantity));
 	}
-	$dv = 0;
-	foreach($data_order->Payment as $dev){			
-		$dv = $dev->DeliveryOrder;
-	}
+	$dv = $paymet->DeliveryAmount;
 	echo "
 		<tr style='background:#deeffc;'>
 			<td colspan='5' style='text-align:right;'><b>Total</b></td>
@@ -70,7 +71,7 @@ if(!empty($data_order)){
 		</tr>		
 		<tr style='background:#deeffc;'>
 			<td colspan='5' style='text-align:right;'><b>Potongan</b></td>
-			<td><b>Rp. ".number_format($totalbayar - ($data_order->TotalPembayaran - $dv),2,',','.')."</b></td>
+			<td><b>Rp. ".number_format($totalbayar - ($paymet->NominalPayment - $dv),2,',','.')."</b></td>
 		</tr>";
 	//if (substr($data_order->OrderNo,1 ,5) == "ECOM") {
 	echo  "	
@@ -82,7 +83,7 @@ if(!empty($data_order)){
 	echo "
 		<tr style='background:#deeffc;'>
 			<td colspan='5' style='text-align:right;'><b>Grand Total</b></td>
-			<td><b>Rp. ".number_format($data_order->TotalPembayaran,2,',','.')."</b></td>
+			<td><b>Rp. ".number_format($totalbayar - ($totalbayar - ($paymet->NominalPayment - $dv)),2,',','.')."</b></td>
 		</tr>";
 	foreach($data_order->Payment as $dp){
 		echo "<tr style='background:#deeffc;'>";
@@ -93,15 +94,15 @@ if(!empty($data_order)){
 	}
 	echo "<tr style='background:#deeffc;'>";
 	echo '<td colspan="5" style="text-align:right;"><b>Kembalian</b></td>';
-	echo '<td><b>Rp. '.number_format($data_order->Kembalian,2,',','.').'</b></td>';
+	echo '<td><b>Rp. '.number_format($paymet->NominalPayment - ($totalbayar - ($totalbayar - ($paymet->NominalPayment - $dv))),2,',','.').'</b></td>';
 	echo '</tr>';
 	echo '<tr style="display:none">';
 	echo '<td colspan="6" align="right">
 			<input type="text" id="DetailProductPrint" value="'. $stringdetail .'" /> 
 			<input type="text" id="SubtotalPrint" value="'. str_replace(',', '.',number_format($totalbayar)) .'" /> 
-			<input type="text" id="PotonganPrint" value="'.str_replace(',', '.',number_format($totalbayar - $data_order->TotalPembayaran)).'" />
-			<input type="text" id="GrandTotalPrint" value="'. str_replace(',', '.',number_format($data_order->TotalPembayaran)) .'" />
-			<input type="text" id="Kembalian" value="'. str_replace(',', '.',number_format($data_order->Kembalian)) .'" />
+			<input type="text" id="PotonganPrint" value="'.str_replace(',', '.',number_format($totalbayar - $paymet->NominalPayment)).'" />
+			<input type="text" id="GrandTotalPrint" value="'. str_replace(',', '.',number_format($paymet->NominalPayment)) .'" />
+			<input type="text" id="Kembalian" value="'. str_replace(',', '.',number_format($totalbayar - $paymet->NominalPayment)) .'" />
 			<input type="text" id="PaymentPrint" value="'. $stringPayment .'" />
 			</td>';
 	echo '</tr>';

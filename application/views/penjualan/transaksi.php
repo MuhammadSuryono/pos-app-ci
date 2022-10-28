@@ -356,7 +356,7 @@ $(document).on('click', '.btn_cek', function(e){
 	if (no_order != ''){
 	$('.err_msg').text('');
 	$.ajax({
-		url: "<?php echo site_url('penjualan/confirm_detail'); ?>/"+no_order,
+		url: "<?php echo site_url('penjualan/confirm_detail?noOrder='); ?>"+no_order,
 		type: "POST",
 		cache: false,
 		data: '',
@@ -371,7 +371,7 @@ $(document).on('click', '.btn_cek', function(e){
 				$('.modal-dialog').removeClass('modal-sm');
 				$('.modal-dialog').addClass('modal-lg');
 				$('#ModalHeader').html(CaptionHeader);
-				$('#ModalContent').load('<?php echo site_url('penjualan/confirm_transaksi');?>/'+no_order);
+				$('#ModalContent').load('<?php echo site_url('penjualan/confirm_transaksi?noOrder=');?>'+no_order);
 				$('#ModalFooter').html("<button type='button' class='btn btn-success' data-dismiss='modal'>Confirm</button>");
 				//$('#ModalGue').modal('show');
 			}

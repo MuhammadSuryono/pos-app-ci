@@ -51,19 +51,18 @@ class Penjualan extends MY_Controller
 		}
 	}
 	
-	public function confirm_detail($id_penjualan){
+	public function confirm_detail(){
 		$store_id = $this->session->userdata('storeId');
-		$post_data = array(
-			'OrderNo'		=> $id_penjualan,
-			'PosId'			=> $store_id,
-			'Confirm'		=> true
-		);
-		$url = URL_API.'SalesOrder/ViewSalesOrderbyNo';
-		$data_api = $this->send_api->send_data($url, $post_data);
+		$id_penjualan = $_GET['noOrder'];
+		$filter = '$filter';
+
+		$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders?$filter=LocationCode eq '$store_id' and DocumentType eq 'quote' and no eq '$id_penjualan'";
+        $data_api = $this->send_api->get_data($url, []);
 		$detail = json_decode($data_api);
 		//['detail'] = '';
 		//$dt['detail'] = $detail;
-		if($detail->Status == 1){
+		if(!isset($detail->error) && count($detail->value) > 0){
+			$this->session->set_userdata('detailEcom', $detail->value);
 			echo '';
 		}else{
 			echo 'Data transaksi tidak ditemukan';
@@ -71,30 +70,37 @@ class Penjualan extends MY_Controller
 		}		
 	}
 	
-	public function confirm_transaksi($id_penjualan){
+	public function confirm_transaksi(){
 		$store_id = $this->session->userdata('storeId');
-		$post_data = array(
-			'OrderNo'		=> $id_penjualan,
-			'PosId'			=> $store_id,
-			'Confirm'		=> true
-		);
-		$url = URL_API.'SalesOrder/ViewSalesOrderbyNo';
-		$data_api = $this->send_api->send_data($url, $post_data);
+		$id_penjualan = $_GET['noOrder'];
+		$filter = '$filter';
+
+		$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesLines?$filter=LocationCode eq '$store_id' and DocumentType eq 'quote' and DocumentNo eq '$id_penjualan'";
+        $data_api = $this->send_api->get_data($url, []);
+
+		$url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/POS_Payment?$filter=SalesOrderNo eq '$id_penjualan'";
+        $dataPayment = $this->send_api->get_data($url, []);
 			
 		$dt['detail'] = json_decode($data_api);
+		$dt['data'] = $this->session->userdata('detailEcom');
+		$dt['payment'] = json_decode($dataPayment);
+
+		// var_dump($dt);
+
 		$this->load->view('penjualan/confirm_detail', $dt);
 	}
 	
 	function send_confirm($id_penjualan){
-		$post_data = array(
-			'OrderNo'		=> $id_penjualan,
-			'PosId'			=> $this->session->userdata('storeId'),
-			'Confirm'		=> true
-		);
-		$url = URL_API.'SalesOrder/ConfirmTransaction';
-		$data_api = $this->send_api->send_data($url, $post_data);
-		$detail = json_decode($data_api);
-		echo $detail->Status;
+		// $post_data = array(
+		// 	'OrderNo'		=> $id_penjualan,
+		// 	'PosId'			=> $this->session->userdata('storeId'),
+		// 	'Confirm'		=> true
+		// );
+		// $url = URL_API.'SalesOrder/ConfirmTransaction';
+		// $data_api = $this->send_api->send_data($url, $post_data);
+		// $detail = json_decode($data_api);
+		// echo $detail->Status;
+		echo 1;
 	}
 	
 	function load_transaksi2(){
