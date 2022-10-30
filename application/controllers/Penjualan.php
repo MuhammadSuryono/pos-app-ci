@@ -134,7 +134,7 @@ class Penjualan extends MY_Controller
             "POSTransTime" => date('h:m:i'),
             "EcommTransTime" => $detailEcom->EcommTransTime,
             "PostingNo" => $lastCode,
-			"EcommNo" => $id_pelanggan,
+			"EcommNo" => $id_penjualan,
             "LocationCode"=> $this->session->userdata("storeId"),
             "NamaPelanggan" => $detailEcom->NamaPelanggan,
             "NoTelpPelanggan" => $detailEcom->NoTelpPelanggan
