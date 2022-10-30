@@ -128,12 +128,13 @@ class Penjualan extends MY_Controller
             "PostingDate"=> date("Y-m-d"),
             "sellToCustomerNo"=> $this->session->userdata("storeId"),
             "sellToCustomerName"=> $this->session->userdata("ap_store_name"),
-            "shipmentDate"=> date("Y-m-d"),
+            "shipmentDate"=> $detailEcom->shipmentDate,
             "ExternalDocNo"=> $lastCode,
             "PaymentMethod"=> $paymentMethode,
-            "POSTransTime" => date('h:m:i'),
+            "POSTransTime" => $detailEcom->POSTransTime,
             "PostingNo" => $lastCode,
             "LocationCode"=> $this->session->userdata("storeId"),
+			"EcommNo" => $id_penjualan
         ];
         $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders";
         $data_api = $this->send_api->send_data($url, $bodySalesInvoiceHeader);
