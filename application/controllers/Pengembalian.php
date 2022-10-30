@@ -324,17 +324,21 @@ class Pengembalian extends MY_Controller
         $bodySalesInvoiceHeader = [
             "no" => $lastCode,
             "DocumentType"=> "Credit Memo",
-            "PostingDate"=> date("Y-m-d"),
+            "PostingDate"=> $data_master["EcommNo"] == "" ? date("Y-m-d") : $data_master["PostingDate"],
             "sellToCustomerNo"=> $data_master["CustomerNo"],
             "sellToCustomerName"=> $data_master["CustomerName"],
-            "shipmentDate"=> date("Y-m-d"),
+            "shipmentDate"=> $data_master["EcommNo"] == "" ? date("Y-m-d") : $data_master["shipmentDate"],
             "ExternalDocNo"=> $data_master["no_nota"],
             "PaymentMethod"=> $data_master["PaymentMethodeCode"],
+            "EcommTransTime" => $data_master["EcommTransTime"],
             "POSTransTime" => date('h:m:i'),
 			"Appliestodoctype" => "",
 			"Appliestodocno" => "",
             "PostingNo" => $lastCode,
             "LocationCode"=> $this->session->userdata("storeId"),
+			"EcommNo" => $data_master["EcommNo"],
+            "NamaPelanggan" => $data_master["NamaPelanggan"],
+            "NoTelpPelanggan" => $data_master["NoTelpPelanggan"]
         ];
         $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders";
         $data_api = $this->send_api->send_data($url, $bodySalesInvoiceHeader);

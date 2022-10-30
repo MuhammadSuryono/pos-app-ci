@@ -124,17 +124,20 @@ class Penjualan extends MY_Controller
 
         $bodySalesInvoiceHeader = [
             "no" => $lastCode,
-             "DocumentType"=> "Invoice",
-            "PostingDate"=> date("Y-m-d"),
+            "DocumentType"=> "Invoice",
+            "PostingDate"=> $detailEcom->shipmentDate,
             "sellToCustomerNo"=> $this->session->userdata("storeId"),
             "sellToCustomerName"=> $this->session->userdata("ap_store_name"),
             "shipmentDate"=> $detailEcom->shipmentDate,
             "ExternalDocNo"=> $lastCode,
-            "PaymentMethod"=> $paymentMethode,
-            "POSTransTime" => $detailEcom->POSTransTime,
+            "PaymentMethod"=> $detailEcom->PaymentMethod,
+            "POSTransTime" => date('h:m:i'),
+            "EcommTransTime" => $detailEcom->EcommTransTime,
             "PostingNo" => $lastCode,
+			"EcommNo" => $id_pelanggan,
             "LocationCode"=> $this->session->userdata("storeId"),
-			"EcommNo" => $id_penjualan
+            "NamaPelanggan" => $detailEcom->NamaPelanggan,
+            "NoTelpPelanggan" => $detailEcom->NoTelpPelanggan
         ];
         $url = URL_API."/Company('be489792-ee2f-ed11-97e8-000d3aa1ef31')/apiSalesOrders";
         $data_api = $this->send_api->send_data($url, $bodySalesInvoiceHeader);
